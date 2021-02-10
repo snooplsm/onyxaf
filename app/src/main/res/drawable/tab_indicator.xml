@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:end="30dp"
+        android:start="30dp">
+        <shape android:shape="rectangle">
+            <size android:height="4dp"/>
+            <corners android:radius="5dp" />
+            <gradient
+                android:angle="360"
+                android:endColor="#de3657"
+                android:startColor="#46499b" />
+        </shape>
+    </item>
+</layer-list>

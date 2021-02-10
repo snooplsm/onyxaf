@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:clipChildren="false"
+        android:clipToPadding="false"
+        android:paddingStart="30dp"
+        android:paddingTop="30dp"
+        android:paddingEnd="30dp"
+        android:paddingBottom="30dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_marginStart="11dp"
+            android:layout_height="wrap_content"
+            android:text="SPEED MODE - ONE"
+            android:textColor="@color/off_white" />
+
+        <SeekBar
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:max="100"
+            android:progress="15"
+            android:maxHeight="14dp"
+            android:progressDrawable="@drawable/progress"
+            android:thumb="@drawable/thumb" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="11dp"
+            android:text="SPEED MODE - TWO"
+            android:textColor="@color/off_white" />
+
+        <SeekBar
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:max="100"
+            android:maxHeight="14dp"
+            android:progress="55"
+            android:progressDrawable="@drawable/progress"
+            android:thumb="@drawable/thumb" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="11dp"
+            android:text="SPEED MODE - THREE"
+            android:textColor="@color/off_white" />
+
+        <SeekBar
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:max="100"
+            android:maxHeight="14dp"
+            android:progress="100"
+            android:progressDrawable="@drawable/progress"
+            android:thumb="@drawable/thumb" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="11dp"
+            android:text="MOTOR BRAKING"
+            android:textColor="@color/off_white" />
+
+        <SeekBar
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:max="100"
+            android:progress="0"
+            android:maxHeight="14dp"
+            android:progressDrawable="@drawable/progress"
+            android:thumb="@drawable/thumb" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="11dp"
+            android:text="REGEN BRAKING"
+            android:textColor="@color/off_white" />
+
+        <SeekBar
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:maxHeight="14dp"
+            android:max="100"
+            android:progress="50"
+            android:progressDrawable="@drawable/progress"
+            android:thumb="@drawable/thumb" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="11dp"
+            android:text="ACCELERATION"
+            android:textColor="@color/off_white" />
+
+        <SeekBar
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:max="100"
+            android:maxHeight="14dp"
+            android:progress="20"
+            android:progressDrawable="@drawable/progress"
+            android:thumb="@drawable/thumb" />
+    </LinearLayout>
+
+</ScrollView>
