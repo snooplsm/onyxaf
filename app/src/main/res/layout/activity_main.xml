@@ -12,7 +12,7 @@
         android:id="@+id/hr"
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:layout_marginTop="60dp"
+        android:layout_marginTop="50dp"
         android:background="#cbccde"
         app:layout_constraintTop_toTopOf="parent" />
 
