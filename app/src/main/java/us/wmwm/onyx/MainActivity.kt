@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
@@ -17,9 +18,9 @@ import com.jaeger.library.StatusBarUtil
 class MainActivity : AppCompatActivity() {
 
     val icons = listOf(
-        ViewPage(icon = R.drawable.ic_noun_pulse_570472,
+        ViewPage(icon = R.drawable.ic_pulse,
             frag = { PulseFragment() }),
-        ViewPage(icon = R.drawable.ic_noun_settings_943929) { SettingsFragment() }).mapIndexed { index, viewPage ->
+        ViewPage(icon = R.drawable.ic_settings) { SettingsFragment() }).mapIndexed { index, viewPage ->
         index to viewPage
     }.toMap()
 
@@ -60,7 +61,19 @@ class ViewPage(
     val frag: () -> Fragment
 )
 
-class PulseFragment : Fragment()
+class PulseFragment : Fragment() {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        return inflater.inflate(R.layout.fragment_pulse, container, false)
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        val mph = view.findViewById<TextView>(R.id.mph)
+        val volt = view.findViewById<TextView>(R.id.volt)
+        mph.isSelected = true
+        volt.isSelected = true
+    }
+}
 
 class SettingsFragment : Fragment() {
 
