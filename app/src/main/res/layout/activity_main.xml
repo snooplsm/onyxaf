@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
     android:background="#1b1c38"
     tools:context=".MainActivity">
 
@@ -20,8 +21,15 @@
         android:layout_height="0dp"
         android:background="#13152b"
         android:paddingBottom="4dp"
-        app:layout_constraintTop_toBottomOf="@id/hr"
-        app:layout_constraintBottom_toTopOf="@id/viewPager"/>
+        app:layout_constraintBottom_toTopOf="@id/viewPager"
+        app:layout_constraintTop_toBottomOf="@id/hr" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="4dp"
+        android:background="#1b1c38"
+        android:paddingBottom="4dp"
+        app:layout_constraintBottom_toBottomOf="@id/strip" />
 
     <ImageView
         android:id="@+id/logo"
@@ -36,16 +44,16 @@
     <com.google.android.material.tabs.TabLayout
         android:id="@+id/strip"
         android:layout_width="0dp"
-        app:layout_constraintWidth_percent=".7"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="50dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/logo"
+        app:layout_constraintWidth_percent=".7"
         app:tabBackground="@drawable/tab_background"
         app:tabIconTint="@color/white"
-        app:tabIndicatorColor="@null"
-        app:tabIndicator="@drawable/tab_indicator" />
+        app:tabIndicator="@drawable/tab_indicator"
+        app:tabIndicatorColor="@null" />
 
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/viewPager"
