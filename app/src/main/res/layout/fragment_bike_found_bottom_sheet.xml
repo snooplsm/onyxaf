@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:background="@drawable/bottom_sheet_background">
+
+  <View
+    android:id="@+id/top"
+    android:layout_width="match_parent"
+    android:layout_height="40dp"
+    app:layout_constraintTop_toTopOf="parent" />
+
+  <TextView
+    android:id="@+id/bike_found"
+    style="@style/form_label"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toBottomOf="@id/top" />
+
+  <TextView
+    android:id="@+id/bike_name"
+    style="@style/form_label"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toBottomOf="@id/bike_found" />
+
+  <EditText
+    android:id="@+id/edit"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:textColor="@color/white"
+    app:layout_constraintWidth_percent=".6"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintTop_toBottomOf="@id/bike_found"
+    app:layout_constraintStart_toStartOf="parent"/>
+
+  <TextView
+    android:layout_width="wrap_content"
+    android:text="@string/rename"
+    android:id="@+id/rename"
+    android:textSize="11sp"
+    android:fontFamily="@font/euphemia"
+    android:layout_height="wrap_content"
+    app:layout_constraintStart_toEndOf="@id/bike_name"
+    app:layout_constraintBottom_toTopOf="@id/bike_name" />
+
+  <TextView
+    android:layout_width="wrap_content"
+    android:text="@string/save"
+    android:id="@+id/save"
+    android:visibility="invisible"
+    android:textSize="11sp"
+    android:fontFamily="@font/euphemia"
+    android:layout_height="wrap_content"
+    app:layout_constraintStart_toEndOf="@id/bike_name"
+    app:layout_constraintBottom_toTopOf="@id/bike_name" />
+
+  <View
+    android:id="@+id/bottom"
+    android:layout_width="match_parent"
+    android:layout_height="40dp"
+    app:layout_constraintTop_toBottomOf="@id/bike_name" />
+
+  <Button
+    android:id="@+id/yes"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="20dp"
+    android:layout_marginEnd="10dp"
+    android:text="@string/connect_bike"
+    app:layout_constraintEnd_toStartOf="@id/no"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toBottomOf="@id/bottom" />
+
+  <Button
+    android:id="@+id/no"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="10dp"
+    android:layout_marginEnd="20dp"
+    android:text="@string/cancel_bike"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintStart_toEndOf="@id/yes"
+    app:layout_constraintTop_toBottomOf="@id/bottom" />
+
+  <View
+    android:layout_width="match_parent"
+    android:layout_height="40dp"
+    app:layout_constraintTop_toBottomOf="@id/no" />
+</androidx.constraintlayout.widget.ConstraintLayout>

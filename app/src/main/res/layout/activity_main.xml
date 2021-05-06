@@ -8,6 +8,18 @@
   android:fitsSystemWindows="true"
   tools:context=".MainActivity">
 
+  <TextView
+    android:id="@+id/connected"
+    android:layout_width="wrap_content"
+    android:text="@string/connected"
+    app:layout_constraintTop_toTopOf="parent"
+    android:gravity="center"
+    android:visibility="gone"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintEnd_toEndOf="parent"
+    android:textColor="@color/online_green"
+    android:layout_height="40dp"/>
+
   <View
     android:id="@+id/hr"
     android:layout_width="match_parent"
@@ -29,6 +41,7 @@
     android:layout_height="4dp"
     android:background="#1b1c38"
     android:paddingBottom="4dp"
+    android:visibility="gone"
     app:layout_constraintBottom_toBottomOf="@id/strip" />
 
   <ImageView
@@ -61,4 +74,24 @@
     android:layout_height="0dp"
     app:layout_constraintBottom_toBottomOf="parent"
     app:layout_constraintTop_toBottomOf="@id/strip" />
+
+  <androidx.constraintlayout.widget.Group
+    android:id="@+id/strips"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    app:constraint_referenced_ids="viewPager,strip" />
+
+  <FrameLayout
+    android:layout_width="match_parent"
+    android:id="@+id/connectView"
+    android:layout_height="0dp"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintTop_toBottomOf="@id/logo">
+
+    <fragment
+      android:id="@+id/connectFragment"
+      android:name="us.wmwm.onyx.ConnectFragment"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent" />
+  </FrameLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
