@@ -10,6 +10,7 @@ import android.text.style.StyleSpan
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
@@ -66,19 +67,32 @@ class BikeFoundBottomSheetDialogFragment : BottomSheetDialogFragment() {
             b.edit.visible()
             b.edit.setText(it.name)
             b.bikeName.hide()
-            b.rename.hide()
+            b.rename.gone()
             b.save.visible()
-            b.edit.handler.postDelayed({
-                b.edit.requestFocus()
+            b.edit?.handler.postDelayed({
+                b.edit?.requestFocus()
                 //b.edit.setSelection(b.edit.length())
             },100)
+            b.edit.addTextChangedListener { k->
+                if(k.toString().trim()!=it.name) {
+                    b.dismiss.visible()
+                }
+            }
+            b.dismiss.setOnClickListener {v->
+                if(b.edit.text.toString()!=it.device) {
+                    b.edit.setText(it.device)
+                } else {
+                    vm.onDismiss()
+                }
+            }
         })
 
         vm.normal.observe(viewLifecycleOwner, Observer {
             b.edit.hide()
             b.bikeName.visible()
             b.rename.visible()
-            b.save.hide()
+            b.save.gone()
+            b.dismiss.gone()
         })
 
         b.save.setOnClickListener {
@@ -127,6 +141,11 @@ class BikeFoundBottomSheetDialogFragmentViewModel : ViewModel() {
         device.postValue(device.value!!.copy(
                 name=toString
         ))
+        normal.postValue(device.value)
+    }
+
+    fun onDismiss() {
+        device.postValue(device.value!!)
         normal.postValue(device.value)
     }
 }

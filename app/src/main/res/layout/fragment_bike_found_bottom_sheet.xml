@@ -34,55 +34,88 @@
     android:layout_width="0dp"
     android:layout_height="wrap_content"
     android:textColor="@color/white"
-    app:layout_constraintWidth_percent=".6"
-    app:layout_constraintEnd_toEndOf="parent"
-    app:layout_constraintTop_toBottomOf="@id/bike_found"
-    app:layout_constraintStart_toStartOf="parent"/>
-
-  <TextView
-    android:layout_width="wrap_content"
-    android:text="@string/rename"
-    android:id="@+id/rename"
-    android:textSize="11sp"
-    android:fontFamily="@font/euphemia"
-    android:layout_height="wrap_content"
-    app:layout_constraintStart_toEndOf="@id/bike_name"
-    app:layout_constraintBottom_toTopOf="@id/bike_name" />
-
-  <TextView
-    android:layout_width="wrap_content"
-    android:text="@string/save"
-    android:id="@+id/save"
     android:visibility="invisible"
-    android:textSize="11sp"
-    android:fontFamily="@font/euphemia"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toBottomOf="@id/bike_found"
+    app:layout_constraintWidth_percent=".75" />
+
+  <ImageView
+    android:id="@+id/rename"
+    android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    app:layout_constraintStart_toEndOf="@id/bike_name"
-    app:layout_constraintBottom_toTopOf="@id/bike_name" />
+    android:contentDescription="@string/nickname"
+    android:fontFamily="@font/euphemia"
+    android:src="@drawable/outline_badge_24"
+    android:text="@string/nickname"
+    app:layout_constraintEnd_toEndOf="parent"
+    android:layout_marginEnd="20dp"
+    android:layout_marginTop="20dp"
+    app:layout_constraintTop_toTopOf="parent" />
+
+  <ImageView
+    android:id="@+id/save"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:contentDescription="@string/save"
+    android:fontFamily="@font/euphemia"
+    android:visibility="gone"
+    android:src="@drawable/outline_check_circle_24"
+    android:text="@string/nickname"
+    app:layout_constraintEnd_toStartOf="@id/dismiss"
+    android:layout_marginEnd="20dp"
+    android:layout_marginTop="20dp"
+    app:layout_constraintTop_toTopOf="parent" />
+
+  <ImageView
+    android:id="@+id/dismiss"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:contentDescription="@string/dismiss"
+    android:src="@drawable/outline_cancel_24"
+    android:visibility="gone"
+    android:text="@string/nickname"
+    app:layout_constraintEnd_toStartOf="@id/rename"
+    android:layout_marginEnd="20dp"
+    android:layout_marginTop="20dp"
+    app:layout_constraintTop_toTopOf="parent" />
+
+  <androidx.constraintlayout.widget.Barrier
+    android:id="@+id/bottomGroup"
+    android:layout_width="wrap_content"
+    app:barrierDirection="bottom"
+    android:layout_height="wrap_content"
+    app:constraint_referenced_ids="bike_name,edit"/>
 
   <View
     android:id="@+id/bottom"
     android:layout_width="match_parent"
-    android:layout_height="40dp"
-    app:layout_constraintTop_toBottomOf="@id/bike_name" />
+    android:layout_height="60dp"
+    app:layout_constraintTop_toBottomOf="@id/bottomGroup" />
 
-  <Button
+  <TextView
     android:id="@+id/yes"
     android:layout_width="0dp"
     android:layout_height="wrap_content"
     android:layout_marginStart="20dp"
     android:layout_marginEnd="10dp"
+    android:gravity="center"
+    android:minHeight="50dp"
+    android:background="@drawable/pink_purple_gradient"
     android:text="@string/connect_bike"
     app:layout_constraintEnd_toStartOf="@id/no"
     app:layout_constraintStart_toStartOf="parent"
     app:layout_constraintTop_toBottomOf="@id/bottom" />
 
-  <Button
+  <TextView
     android:id="@+id/no"
+    android:gravity="center"
+    android:minHeight="50dp"
     android:layout_width="0dp"
     android:layout_height="wrap_content"
     android:layout_marginStart="10dp"
     android:layout_marginEnd="20dp"
+    android:background="@color/purple_500"
     android:text="@string/cancel_bike"
     app:layout_constraintEnd_toEndOf="parent"
     app:layout_constraintStart_toEndOf="@id/yes"

@@ -11,8 +11,9 @@
   <string name="feet_abbr">%1$d FT</string>
   <string name="connect_bike">CONNECT</string>
   <string name="cancel_bike">DISMISS</string>
-  <string name="rename">RENAME</string>
+  <string name="nickname">Add Nickname</string>
   <string name="save">SAVE</string>
+  <string name="dismiss">dismiss</string>
   <plurals name="rssi">
     <item quantity="one">One foot away</item>
     <item quantity="many">%1$d feet away</item>

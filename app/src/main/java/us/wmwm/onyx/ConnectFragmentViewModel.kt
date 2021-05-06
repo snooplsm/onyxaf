@@ -66,7 +66,7 @@ class ConnectFragmentViewModel(
                             .map {
                                 val id = uuids[it]
                                 BluetoothDvc(id,0,id,options[nextInt(0,5)])
-                            }.sortedByDescending { it.rssi }.run {
+                            }.sortedBy { it.rssi }.run {
                                 onDevices.postValue(this)
                             }
                 }
@@ -125,7 +125,7 @@ class ConnectFragmentViewModel(
                 .observeOn(Schedulers.io())
                 .subscribe { t1, t2 ->
                     canShowDevice = false
-                    val list = devices.values.sortedBy { it.rssi }
+                    val list = devices.values.sortedByDescending { it.rssi }
                     onDevices.postValue(list)
                 }
     }
