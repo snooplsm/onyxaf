@@ -3,6 +3,7 @@ package us.wmwm.onyx
 import android.animation.ValueAnimator
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
+import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
@@ -39,8 +40,6 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         StatusBarUtil.setTransparent(this)
         super.onCreate(savedInstanceState)
-        println(0xF1)
-        println(-14.toByte())
         b = ActivityMainBinding.inflate(layoutInflater)
         setContentView(b.root)
 
@@ -83,20 +82,29 @@ class MainActivity : AppCompatActivity() {
 
         vm.connected.observe(this, Observer {
             b.connected.visible()
+            b.connected.text = resources.getString(R.string.connected_to_,it.name)
             //b.logo.setColorFilter(ResourcesCompat.getColor(resources,R.color.online_green,theme))
             b.strips.visible()
             b.connectView.gone()
         })
 
         vm.disconnected.observe(this, Observer {
-            b.strips.gone()
+            b.strips.hide()
             b.connectView.visible()
             b.connected.gone()
         })
 //        b.strips.visible()
 //        b.connectView.gone()
-        b.strips.gone()
+        b.strips.hide()
+
         b.connectView.visible()
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        supportFragmentManager.fragments.forEach {
+            it.onActivityResult(requestCode, resultCode, data)
+        }
     }
 }
 
@@ -118,7 +126,8 @@ class UpdateListener(val lot:LottieAnimationView) : ValueAnimator.AnimatorUpdate
 
 }
 
-class MainActiivtyViewModel(val adapter: BluetoothAdapter, val manager: BluetoothManager) : ViewModel() {
+
+class MainActiivtyViewModel(val db:OnyxDb, val manager: BluetoothManager) : ViewModel() {
 
     fun pausePulse() {
         manager.pausePulse()
@@ -130,7 +139,7 @@ class MainActiivtyViewModel(val adapter: BluetoothAdapter, val manager: Bluetoot
 
     var conn: Disposable
 
-    val connected = MutableLiveData<BluetoothDevice>()
+    val connected = MutableLiveData<BluetoothDvc>()
 
     val disconnected = MutableLiveData<BluetoothDevice>()
 
@@ -138,8 +147,16 @@ class MainActiivtyViewModel(val adapter: BluetoothAdapter, val manager: Bluetoot
         conn = manager.connected.observeOn(Schedulers.io())
                 .subscribeOn(Schedulers.io())
                 .subscribe({
+                    val dvc = db.device().findByDevice(
+                        it.first.address
+                    )?: BluetoothDvc(
+                        device = it.first.address,
+                        type = it.first.type,
+                        name = it.first.name,
+                        rssi = Integer.MIN_VALUE
+                    )
                     when(it.second) {
-                        BluetoothConnection.CONNECTED-> connected.postValue(it.first)
+                        BluetoothConnection.CONNECTED-> connected.postValue(dvc)
                         else-> disconnected.postValue(it.first)
                     }
                 }, {

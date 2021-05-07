@@ -18,8 +18,8 @@ import kotlin.random.Random.Default.nextInt
 
 class ConnectFragmentViewModel(
         val adapter: BluetoothAdapter,
-        val manager: BluetoothManager
-
+        val manager: BluetoothManager,
+        val db:OnyxDb,
 ) : ViewModel() {
 
     val onDiscovering = MutableLiveData<Boolean>()
@@ -53,23 +53,26 @@ class ConnectFragmentViewModel(
                     }
                 }
 
-        val random = nextInt(4,10)
-        val options = listOf(-30,-35,-40,-50,-55)
-        val uuids = (0..10).map { UUID.randomUUID().toString() }
-
-        Observable.interval(5000,TimeUnit.MILLISECONDS)
-                .subscribeOn(Schedulers.io())
-                .observeOn(Schedulers.io())
-                .subscribe {
-
-                    (0..random)
-                            .map {
-                                val id = uuids[it]
-                                BluetoothDvc(id,0,id,options[nextInt(0,5)])
-                            }.sortedBy { it.rssi }.run {
-                                onDevices.postValue(this)
-                            }
-                }
+//        val random = nextInt(4,10)
+//        val options = listOf(-30,-35,-40,-50,-55)
+//        val uuids = (0..10).map { UUID.randomUUID().toString() }.toMutableList()
+//        uuids[0] = "DAO"
+//
+//        Observable.interval(5000,TimeUnit.MILLISECONDS)
+//                .subscribeOn(Schedulers.io())
+//                .observeOn(Schedulers.io())
+//                .subscribe {
+//                    (0..random)
+//                            .map {
+//                                val id = uuids[it]
+//                                BluetoothDvc(id,0,id,options[nextInt(0,5)])
+//                            }.map {
+//                                db.device().findByDevice(it.device)?:it
+//                        }
+//                            .sortedBy { it.rssi }.run {
+//                                onDevices.postValue(this)
+//                            }
+//                }
 
     }
 
@@ -123,10 +126,19 @@ class ConnectFragmentViewModel(
         Single.just(2).delay(10, TimeUnit.MILLISECONDS)
                 .subscribeOn(Schedulers.computation())
                 .observeOn(Schedulers.io())
+            .map {
+                devices.values.map {
+                    db.device().findByDevice(it.device)?:it
+                }.sortedWith(
+                    compareBy(
+                        {it.nickname!=null},{it.rssi},
+                    )
+                )
+            }
                 .subscribe { t1, t2 ->
                     canShowDevice = false
-                    val list = devices.values.sortedByDescending { it.rssi }
-                    onDevices.postValue(list)
+
+                    onDevices.postValue(t1)
                 }
     }
 

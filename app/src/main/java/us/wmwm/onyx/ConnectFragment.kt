@@ -13,7 +13,6 @@ import android.content.pm.PackageManager
 import android.content.res.ColorStateList
 import android.graphics.drawable.ShapeDrawable
 import android.graphics.drawable.shapes.OvalShape
-import android.graphics.drawable.shapes.Shape
 import android.location.LocationManager
 import android.os.Bundle
 import android.util.AttributeSet
@@ -22,6 +21,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat.checkSelfPermission
 import androidx.core.content.res.ResourcesCompat
@@ -29,7 +30,6 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import com.airbnb.lottie.model.content.CircleShape
 import org.koin.android.ext.android.inject
 import org.koin.android.viewmodel.ext.android.sharedViewModel
 import org.koin.android.viewmodel.ext.android.viewModel
@@ -48,6 +48,8 @@ class ConnectFragment : Fragment() {
     val bfVm: BikeFoundBottomSheetDialogFragmentViewModel by sharedViewModel()
 
     val bluetoothAdapter: BluetoothAdapter by inject()
+
+    lateinit var requestPermissionLauncher:ActivityResultLauncher<String>
 
     private val regex = "[0-9]{9}".toRegex()
 
@@ -100,7 +102,7 @@ class ConnectFragment : Fragment() {
                                     type = claz.majorDeviceClass,
                                     name = name,
                                     rssi = rssi.toInt()
-                            )
+                                )
                     )
 
                 }
@@ -149,7 +151,7 @@ class ConnectFragment : Fragment() {
         }
     }
 
-    fun discovery() {
+    fun discovery(passive:Boolean=false) {
         val locationManager = requireContext().getSystemService(Context.LOCATION_SERVICE) as LocationManager
         val isGpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
         val bluetoothEnabled = bluetoothAdapter.isEnabled
@@ -166,8 +168,9 @@ class ConnectFragment : Fragment() {
                 }
         when {
             needed.isEmpty() -> vm.discovery()
-            else -> {
-                requireActivity().requestPermissions(needed.toTypedArray(), 100)
+            !passive -> {
+                requestPermissionLauncher.launch(
+                    needed[0])
             }
         }
     }
@@ -205,10 +208,12 @@ class ConnectFragment : Fragment() {
         vm.onDiscovering.observe(viewLifecycleOwner, Observer {
             if (it) {
                 b.connect.text = "Finding your ONYX"
-                b.connect.isEnabled = false
+                b.connect.hide()
+                b.scanning.visible()
             } else {
                 b.connect.text = "connect to bike"
-                b.connect.isEnabled = true
+                b.connect.visible()
+                b.scanning.gone()
             }
         })
 
@@ -227,6 +232,22 @@ class ConnectFragment : Fragment() {
                 vm.onWrongDevice(it.second)
             }
         })
+
+        requestPermissionLauncher =
+            registerForActivityResult(
+                ActivityResultContracts.RequestPermission()
+            ) { isGranted: Boolean ->
+                if (isGranted) {
+                    discovery(false)
+                } else {
+                    // Explain to the user that the feature is unavailable because the
+                    // features requires a permission that the user has denied. At the
+                    // same time, respect the user's decision. Don't link to system
+                    // settings in an effort to convince the user to change their
+                    // decision.
+                }
+            }
+
     }
 
     private fun showDenied() {
@@ -275,8 +296,19 @@ class BluetoothDeviceView(context: Context, attrs: AttributeSet? = null) : Const
 
     var click:(device:BluetoothDvc)->Unit = {}
 
+    init {
+        val root = b.root as ConstraintLayout
+        root.clipChildren = false
+        root.clipToPadding = false
+    }
+
     fun bind(bluetoothDvc: BluetoothDvc) {
-        b.device.text = bluetoothDvc.name
+        b.device.text = bluetoothDvc.nickname?:bluetoothDvc.name
+        bluetoothDvc.nickname?.let {
+            b.label.visible()
+        }?: kotlin.run {
+            b.label.gone()
+        }
         val feet = formatToFeet(bluetoothDvc.rssi)
         val str = when(feet) {
             Integer.MAX_VALUE -> "∞"

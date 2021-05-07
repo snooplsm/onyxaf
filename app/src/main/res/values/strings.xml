@@ -1,23 +1,23 @@
 <resources>
-  <string name="app_name">Onyx</string>
-
-  <string name="connect_to_bike">Connect to</string>
-  <string name="need_bt">You need to enable bluetooth.</string>
-  <string name="need_gps">You need to enable location services to scan for bluetooth devices.</string>
-  <string name="nope">nope</string>
-  <string name="connected">CONNECTED</string>
-  <string name="a_full_read_of_the_controller_is_needed_if_you_want_to_program_it">A full read of the controller is needed if you want to program it.</string>
-  <string name="read_from_controller">READ FROM CONTROLLER</string>
-  <string name="feet_abbr">%1$d FT</string>
-  <string name="connect_bike">CONNECT</string>
-  <string name="cancel_bike">DISMISS</string>
-  <string name="nickname">Add Nickname</string>
-  <string name="save">SAVE</string>
-  <string name="dismiss">dismiss</string>
-  <plurals name="rssi">
-    <item quantity="one">One foot away</item>
-    <item quantity="many">%1$d feet away</item>
-    <item quantity="zero">Probably your bike</item>
-    <item quantity="other">%1$d feet away</item>
-  </plurals>
+    <string name="app_name">Onyx</string>
+    <string name="connect_to_bike">Connect to</string>
+    <string name="need_bt">You need to enable bluetooth.</string>
+    <string name="need_gps">You need to enable location services to scan for bluetooth devices.</string>
+    <string name="nope">nope</string>
+    <string name="connected">CONNECTED</string>
+    <string name="a_full_read_of_the_controller_is_needed_if_you_want_to_program_it">A full read of the controller is needed if you want to program it.</string>
+    <string name="read_from_controller">READ FROM CONTROLLER</string>
+    <string name="feet_abbr">%1$d FT</string>
+    <string name="connect_bike">CONNECT</string>
+    <string name="cancel_bike">DISMISS</string>
+    <string name="nickname">Add Nickname</string>
+    <string name="save">SAVE</string>
+    <string name="dismiss">dismiss</string>
+    <string name="connected_to_">CONNECTED TO\n%1$s</string>
+    <plurals name="rssi">
+        <item quantity="one">One foot away</item>
+        <item quantity="many">%1$d feet away</item>
+        <item quantity="zero">Probably your bike</item>
+        <item quantity="other">%1$d feet away</item>
+    </plurals>
 </resources>

@@ -39,7 +39,7 @@ class BikesFoundBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setStyle(BottomSheetDialogFragment.STYLE_NORMAL, R.style.BottomSheetDialogTheme);
+        setStyle(STYLE_NORMAL, R.style.BottomSheetDialogTheme);
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -51,6 +51,9 @@ class BikesFoundBottomSheetDialogFragment : BottomSheetDialogFragment() {
             removeDuration=200
             addDuration=400
         }
+        b.recyclerView.addItemDecoration(SpaceItemDecoration(
+            firstTop = resources.getDimension(R.dimen.five)
+        ))
 
         vm.device.observe(viewLifecycleOwner, Observer {
             adapter.submitList(it)

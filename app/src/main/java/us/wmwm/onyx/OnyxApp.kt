@@ -2,6 +2,7 @@ package us.wmwm.onyx
 
 import android.app.Application
 import android.bluetooth.BluetoothAdapter
+import androidx.room.Room
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.android.viewmodel.dsl.viewModel
@@ -21,6 +22,13 @@ class OnyxApp : Application() {
             BluetoothManager(get())
         }
 
+        single {
+            Room.databaseBuilder(
+                applicationContext,
+                OnyxDb::class.java, "onyx"
+            ).build()
+        }
+
         viewModel {
             PulseViewModel(get())
         }
@@ -29,7 +37,7 @@ class OnyxApp : Application() {
             MainActiivtyViewModel(get(),get())
         }
         viewModel {
-            ConnectFragmentViewModel(get(),get())
+            ConnectFragmentViewModel(get(),get(),get())
         }
         viewModel {
             SettingsViewModule(get())
@@ -38,7 +46,7 @@ class OnyxApp : Application() {
             BikesFoundBottomSheetDialogFragmentViewModel()
         }
         viewModel {
-            BikeFoundBottomSheetDialogFragmentViewModel()
+            BikeFoundBottomSheetDialogFragmentViewModel(get())
         }
     }
 
