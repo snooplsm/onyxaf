@@ -19,7 +19,7 @@ class BikesFoundBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     val vm: BikesFoundBottomSheetDialogFragmentViewModel by sharedViewModel()
 
-    val bfVm: BikeFoundBottomSheetDialogFragmentViewModel by sharedViewModel()
+    val bfVm: BikeConnectDialogFragmentViewModel by sharedViewModel()
 
     val adapter = BluetoothDeviceAdapter()
 
@@ -52,21 +52,28 @@ class BikesFoundBottomSheetDialogFragment : BottomSheetDialogFragment() {
             addDuration=400
         }
         b.recyclerView.addItemDecoration(SpaceItemDecoration(
-            firstTop = resources.getDimension(R.dimen.five)
+            firstTop = resources.getDimension(R.dimen.five),
+            lastBottom = resources.getDimension(R.dimen.five)
         ))
 
         vm.device.observe(viewLifecycleOwner, Observer {
             adapter.submitList(it)
         })
 
+        //vm.conn
+
         adapter.onClick = {
             bfVm.init(it)
             val frag = childFragmentManager.findFragmentByTag("bfVm")
             if(frag==null) {
-                val f = BikeFoundBottomSheetDialogFragment()
+                val f = BikeConnectBottomSheetDialogFragment()
                 f.show(childFragmentManager,"bfVm")
             }
         }
+
+        vm.dismiss.observe(viewLifecycleOwner, Observer {
+            dismiss()
+        })
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {

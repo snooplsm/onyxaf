@@ -9,6 +9,7 @@ import org.koin.android.viewmodel.dsl.viewModel
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
 import us.wmwm.onyx.bluetooth.BluetoothManager
+import us.wmwm.onyx.db.OnyxDb
 
 class OnyxApp : Application() {
 
@@ -30,7 +31,7 @@ class OnyxApp : Application() {
         }
 
         viewModel {
-            PulseViewModel(get())
+            PulseViewModel(get(), get())
         }
 
         viewModel {
@@ -43,11 +44,15 @@ class OnyxApp : Application() {
             SettingsViewModule(get())
         }
         viewModel {
-            BikesFoundBottomSheetDialogFragmentViewModel()
+            BikesFoundBottomSheetDialogFragmentViewModel(get())
         }
         viewModel {
-            BikeFoundBottomSheetDialogFragmentViewModel(get())
+            BikeConnectDialogFragmentViewModel(get())
         }
+        viewModel {
+            ReviewSettingsBottomSheetViewModel()
+        }
+
     }
 
     override fun onCreate() {

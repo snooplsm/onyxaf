@@ -31,6 +31,17 @@
     android:layout_height="0dp"/>
 
   <TextView
+    android:id="@+id/countdown"
+    android:layout_width="wrap_content"
+    app:layout_constraintStart_toStartOf="@id/scanning"
+    app:layout_constraintEnd_toEndOf="@id/scanning"
+    android:textSize="28sp"
+    app:layout_constraintTop_toTopOf="@id/scanning"
+    android:textColor="@color/purple_700"
+    app:layout_constraintBottom_toBottomOf="@id/scanning"
+    android:layout_height="wrap_content"/>
+
+  <TextView
     android:id="@+id/bt"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"

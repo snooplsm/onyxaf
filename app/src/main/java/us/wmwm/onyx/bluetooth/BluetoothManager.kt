@@ -525,25 +525,6 @@ data class MonitorData(
         val motorTemp:Int,
         val controllerTemp:Int,
         val voltage:Int
-//        strArr[0] = new String[]{"016", "2", "1", "h", "Error Status", "0", "65535", "1", "0", "错误状态,实时显示"};
-//strArr[1] = new String[]{"000", "1", "0", "uo", "TPS Pedel", "0", "255", "1", "0", "油门AD,Range 0~255 对应0~5V"};
-//strArr[2] = new String[]{"001", "1", "0", "uo", "Brake Pedel", "0", "255", "1", "0", "刹车AD,Range 0~255 对应0~5V"};
-//strArr[3] = new String[]{"002", "1", "0", "uo", "Brake Switch", "0", "2", "1", "0", "刹车开关状态,Range 0或1"};
-//strArr[4] = new String[]{"003", "1", "0", "uo", "Foot Switch", "0", "2", "1", "0", "油门安全开关状态,Range 0或1"};
-//strArr[5] = new String[]{"004", "1", "0", "uo", "Forward Switch", "0", "2", "1", "0", "前进开关状态,Range 0或1"};
-//strArr[6] = new String[]{"005", "1", "0", "uo", "Reversed", "0", "2", "1", "0", "后退开关状态,Range 0或1"};
-//strArr[7] = new String[]{"006", "1", "0", "uo", "Hall A", "0", "2", "1", "0", "HallA,编码器A,Range 0或1"};
-//strArr[8] = new String[]{"007", "1", "0", "uo", "Hall B", "0", "2", "1", "0", "HallB,编码器B,Range 0或1"};
-//strArr[9] = new String[]{"008", "1", "0", "uo", "Hall C", "0", "2", "1", "0", "HallC,Range 0或1"};
-//strArr[10] = new String[]{"009", "1", "0", "uo", "B+  Volt", "0", "200", "1", "0", "电池实际电压,Range 0~200V"};
-//strArr[11] = new String[]{"010", "1", "0", "uo", "Motor Temp", "0", "150", "1", "0", "电机温度,Range 0~150℃"};
-//strArr[12] = new String[]{"011", "1", "0", "uo", "Controller Temp", "0", "150", "1", "0", "控制器温度,Range 0~150℃"};
-//strArr[13] = new String[]{"012", "1", "0", "uo", "Setting Dir", "0", "2", "1", "0", "给定运行方向,0前进,1后退"};
-//strArr[14] = new String[]{"013", "1", "0", "uo", "Actual Dir", "0", "2", "1", "0", "实际运行方向,0前进,1后退"};
-//strArr[15] = new String[]{"014", "1", "0", "uo", "Brake Switch2", "0", "2", "1", "0", "刹车开关2状态,Range 0或1"};
-//strArr[16] = new String[]{"015", "1", "0", "uo", "Low Speed", "0", "2", "1", "0", "刹车开关2状态,Range 0或1"};
-//strArr[17] = new String[]{"018", "2", "1", "uo", "Motor Speed", "0", "10000", "1", "0", "电机速度,Range 0~10000"};
-//strArr[18] = new String[]{"020", "2", "1", "uo", "Phase Current", "0", "800", "1", "0", "相电流有效值,Range 0~800"};
 )
 
 data class Voltage(

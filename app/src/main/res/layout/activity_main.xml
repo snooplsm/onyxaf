@@ -20,6 +20,17 @@
     android:textColor="@color/online_green"
     android:layout_height="40dp"/>
 
+  <ImageView
+    android:layout_width="30dp"
+    android:id="@+id/bike_image"
+    android:contentDescription="@string/cd_clipart_of_small_onyx_bike"
+    app:layout_constraintDimensionRatio="W,1:1"
+    android:src="@drawable/ic_onyxbike"
+    app:tint="#cccccc"
+    android:layout_height="30dp"
+    app:layout_constraintBottom_toTopOf="@id/hr"
+    app:layout_constraintStart_toStartOf="parent"/>
+
   <View
     android:id="@+id/hr"
     android:layout_width="match_parent"
@@ -29,6 +40,7 @@
     app:layout_constraintTop_toTopOf="parent" />
 
   <View
+    android:id="@+id/fillerBg"
     android:layout_width="match_parent"
     android:layout_height="0dp"
     android:background="#13152b"
@@ -42,6 +54,7 @@
     android:background="#1b1c38"
     android:paddingBottom="4dp"
     android:visibility="gone"
+    android:id="@+id/space"
     app:layout_constraintBottom_toBottomOf="@id/strip" />
 
   <ImageView
@@ -50,6 +63,7 @@
     android:layout_height="69dp"
     android:layout_marginTop="60dp"
     android:src="@drawable/ic_onyx_logo"
+    android:contentDescription="@string/cd_onyx_logo"
     app:layout_constraintEnd_toEndOf="parent"
     app:layout_constraintStart_toStartOf="parent"
     app:layout_constraintTop_toBottomOf="@id/hr" />
@@ -86,11 +100,11 @@
     android:id="@+id/connectView"
     android:layout_height="0dp"
     app:layout_constraintBottom_toBottomOf="parent"
-    app:layout_constraintTop_toBottomOf="@id/logo">
+    app:layout_constraintTop_toBottomOf="@id/strip">
 
-    <fragment
+    <androidx.fragment.app.FragmentContainerView
       android:id="@+id/connectFragment"
-      android:name="us.wmwm.onyx.ConnectFragment"
+      android:name="us.wmwm.onyx.SettingsFragment"
       android:layout_width="match_parent"
       android:layout_height="match_parent" />
   </FrameLayout>

@@ -11,18 +11,19 @@ import io.reactivex.rxjava3.schedulers.Schedulers
 import us.wmwm.onyx.bluetooth.BluetoothConnection
 import us.wmwm.onyx.bluetooth.BluetoothManager
 import us.wmwm.onyx.bluetooth.Command
-import java.util.*
+import us.wmwm.onyx.db.BluetoothDvc
+import us.wmwm.onyx.db.OnyxDb
 import java.util.concurrent.TimeUnit
-import kotlin.collections.LinkedHashSet
-import kotlin.random.Random.Default.nextInt
 
 class ConnectFragmentViewModel(
-        val adapter: BluetoothAdapter,
-        val manager: BluetoothManager,
-        val db:OnyxDb,
+    val adapter: BluetoothAdapter,
+    val manager: BluetoothManager,
+    val db: OnyxDb,
 ) : ViewModel() {
 
     val onDiscovering = MutableLiveData<Boolean>()
+
+    val countdown = MutableLiveData<Int>()
 
     val onDevices = MutableLiveData<List<BluetoothDvc>>()
 
@@ -32,7 +33,7 @@ class ConnectFragmentViewModel(
 
     var disSub: Disposable? = null
 
-    val devices: MutableMap<String,BluetoothDvc> = mutableMapOf()
+    val devices: MutableMap<String, BluetoothDvc> = mutableMapOf()
 
     val discarded: MutableList<BluetoothDvc> = mutableListOf()
 
@@ -40,7 +41,7 @@ class ConnectFragmentViewModel(
 
     var autoConnectSub: Disposable? = null
 
-    private val regex = "[0-9]{9}".toRegex()
+    private val regex = "[0-9]{8,9}".toRegex()
     private val type = 7936
 
     init {
@@ -77,7 +78,7 @@ class ConnectFragmentViewModel(
     }
 
     fun onResume() {
-        connectToPreviouslyPairedDevice()
+        //connectToPreviouslyPairedDevice()
     }
 
     private fun connectToPreviouslyPairedDevice() {
@@ -107,14 +108,21 @@ class ConnectFragmentViewModel(
         canShowDevice = true
         val start = adapter.startDiscovery()
         onDiscovering.postValue(start)
-        disSub = Single.just(1).observeOn(Schedulers.io())
+
+        val total = 12
+        disSub = Observable.intervalRange(0,total.toLong(),0,1,TimeUnit.SECONDS)
+            .observeOn(Schedulers.io())
                 .subscribeOn(Schedulers.io())
-                .delay(12000, TimeUnit.MILLISECONDS)
-                .subscribe { t1, t2 ->
-                    if (adapter.isDiscovering) {
-                        onDiscovering.postValue(!adapter.cancelDiscovery())
-                    }
+            .subscribe( {
+                countdown.postValue(total-(it.toInt()+1))
+            },  {
+
+            },  {
+                countdown.postValue(0)
+                if (adapter.isDiscovering) {
+                    onDiscovering.postValue(!adapter.cancelDiscovery())
                 }
+            })
     }
 
     fun onDevice(bluetoothDvc: BluetoothDvc) {

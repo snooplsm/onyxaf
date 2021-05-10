@@ -1,16 +1,21 @@
 package us.wmwm.onyx
 
+import android.animation.Animator
+import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
-import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.content.Intent
-import android.graphics.Color
 import android.os.Bundle
+import android.view.Gravity
+import android.view.animation.Animation
+import android.view.animation.Animation.AnimationListener
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.res.ResourcesCompat
+import androidx.constraintlayout.widget.ConstraintSet
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
+import androidx.transition.Slide
+import androidx.transition.TransitionManager
 import com.airbnb.lottie.LottieAnimationView
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
@@ -21,6 +26,8 @@ import org.koin.android.viewmodel.ext.android.viewModel
 import us.wmwm.onyx.bluetooth.BluetoothConnection
 import us.wmwm.onyx.bluetooth.BluetoothManager
 import us.wmwm.onyx.databinding.ActivityMainBinding
+import us.wmwm.onyx.db.BluetoothDvc
+import us.wmwm.onyx.db.OnyxDb
 
 
 class MainActivity : AppCompatActivity() {
@@ -52,6 +59,62 @@ class MainActivity : AppCompatActivity() {
                 bind(res)
             }
         }.attach()
+        var animator:ObjectAnimator?=null
+        val deanimator = ObjectAnimator.ofFloat(b.bikeImage, "translationX", -200f).apply {
+            duration = 2000
+            addListener(object : Animator.AnimatorListener {
+                override fun onAnimationStart(p0: Animator?) {
+                    b.bikeImage.scaleX = -1f
+                }
+
+                override fun onAnimationEnd(p0: Animator?) {
+                    b.bikeImage.translationX = -800f
+                    animator?.startDelay = 10000
+                    animator?.start()
+                }
+
+                override fun onAnimationCancel(p0: Animator?) {
+
+                }
+
+                override fun onAnimationRepeat(p0: Animator?) {
+
+                }
+
+            })
+        }
+        deanimator.startDelay = 5000
+        animator = ObjectAnimator.ofFloat(b.bikeImage, "translationX", 1200f).apply {
+            duration = 2000
+            addListener(object : Animator.AnimatorListener {
+                override fun onAnimationStart(p0: Animator?) {
+                    b.bikeImage.scaleX = 1f
+                    b.bikeImage.translationX = -800f
+                }
+
+                override fun onAnimationEnd(p0: Animator?) {
+                    b.bikeImage.translationX = 1200f
+                    deanimator.start()
+                }
+
+                override fun onAnimationCancel(p0: Animator?) {
+
+                }
+
+                override fun onAnimationRepeat(p0: Animator?) {
+
+                }
+
+
+            })
+        }
+
+        animator.startDelay = 1000
+
+        //animator.start()
+
+
+
 
         b.strip.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab) {
@@ -86,6 +149,7 @@ class MainActivity : AppCompatActivity() {
             //b.logo.setColorFilter(ResourcesCompat.getColor(resources,R.color.online_green,theme))
             b.strips.visible()
             b.connectView.gone()
+
         })
 
         vm.disconnected.observe(this, Observer {
@@ -127,7 +191,7 @@ class UpdateListener(val lot:LottieAnimationView) : ValueAnimator.AnimatorUpdate
 }
 
 
-class MainActiivtyViewModel(val db:OnyxDb, val manager: BluetoothManager) : ViewModel() {
+class MainActiivtyViewModel(val db: OnyxDb, val manager: BluetoothManager) : ViewModel() {
 
     fun pausePulse() {
         manager.pausePulse()
@@ -157,7 +221,7 @@ class MainActiivtyViewModel(val db:OnyxDb, val manager: BluetoothManager) : View
                     )
                     when(it.second) {
                         BluetoothConnection.CONNECTED-> connected.postValue(dvc)
-                        else-> disconnected.postValue(it.first)
+                        else-> disconnected.postValue(it.first!!)
                     }
                 }, {
 

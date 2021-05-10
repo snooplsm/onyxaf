@@ -35,6 +35,7 @@ import org.koin.android.viewmodel.ext.android.sharedViewModel
 import org.koin.android.viewmodel.ext.android.viewModel
 import us.wmwm.onyx.databinding.BluetoothDeviceViewBinding
 import us.wmwm.onyx.databinding.FragmentConnectBinding
+import us.wmwm.onyx.db.BluetoothDvc
 
 
 class ConnectFragment : Fragment() {
@@ -45,13 +46,13 @@ class ConnectFragment : Fragment() {
 
     val vm: ConnectFragmentViewModel by viewModel()
     val bfsVm: BikesFoundBottomSheetDialogFragmentViewModel by sharedViewModel()
-    val bfVm: BikeFoundBottomSheetDialogFragmentViewModel by sharedViewModel()
+    val bfVm: BikeConnectDialogFragmentViewModel by sharedViewModel()
 
     val bluetoothAdapter: BluetoothAdapter by inject()
 
     lateinit var requestPermissionLauncher:ActivityResultLauncher<String>
 
-    private val regex = "[0-9]{9}".toRegex()
+    private val regex = "[0-9]{8,9}".toRegex()
 
     override fun onCreateView(
             inflater: LayoutInflater,
@@ -84,7 +85,7 @@ class ConnectFragment : Fragment() {
             },
             BluetoothDevice.ACTION_FOUND to object : BroadcastReceiver() {
                 override fun onReceive(p0: Context, p1: Intent) {
-                    val dev = p1.getParcelableExtra<BluetoothDevice>(BluetoothDevice.EXTRA_DEVICE)
+                    val dev = p1.getParcelableExtra<BluetoothDevice>(BluetoothDevice.EXTRA_DEVICE)!!
                     val claz = p1.getParcelableExtra<BluetoothClass>(BluetoothDevice.EXTRA_CLASS)!!
 
                     val name = p1.getStringExtra(BluetoothDevice.EXTRA_NAME) ?: return
@@ -115,7 +116,7 @@ class ConnectFragment : Fragment() {
             },
             BluetoothDevice.ACTION_ACL_DISCONNECTED to object : BroadcastReceiver() {
                 override fun onReceive(p0: Context, p1: Intent) {
-                    val dev = p1.getParcelableExtra<BluetoothDevice>(BluetoothDevice.EXTRA_DEVICE)
+                    val dev = p1.getParcelableExtra<BluetoothDevice>(BluetoothDevice.EXTRA_DEVICE)!!
                     vm.onDisconnected(dev)
                 }
 
@@ -159,8 +160,8 @@ class ConnectFragment : Fragment() {
             showLocationAndOrBluetoothRequired(isGpsEnabled, bluetoothEnabled)
         }
 
-        val needed = listOf(
-                Manifest.permission.ACCESS_COARSE_LOCATION,
+        val needed = listOfNotNull(
+                Manifest.permission.ACCESS_FINE_LOCATION,
                 Manifest.permission.BLUETOOTH_ADMIN
         )
                 .filter {
@@ -205,15 +206,21 @@ class ConnectFragment : Fragment() {
             discovery()
         }
 
+        vm.countdown.observe(viewLifecycleOwner, Observer {
+            b.countdown.text = it.toString()
+        })
+
         vm.onDiscovering.observe(viewLifecycleOwner, Observer {
             if (it) {
                 b.connect.text = "Finding your ONYX"
                 b.connect.hide()
                 b.scanning.visible()
+                b.countdown.visible()
             } else {
                 b.connect.text = "connect to bike"
                 b.connect.visible()
                 b.scanning.gone()
+                b.countdown.gone()
             }
         })
 
@@ -273,7 +280,7 @@ class BluetoothDeviceAdapter : androidx.recyclerview.widget.ListAdapter<Bluetoot
 
 }) {
 
-    var onClick:(device:BluetoothDvc)->Unit = {}
+    var onClick:(device: BluetoothDvc)->Unit = {}
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BaseViewHolder {
         return BaseViewHolder(BluetoothDeviceView(parent.context).apply {
@@ -294,7 +301,7 @@ class BluetoothDeviceView(context: Context, attrs: AttributeSet? = null) : Const
 
     val b = BluetoothDeviceViewBinding.inflate(LayoutInflater.from(context), this)
 
-    var click:(device:BluetoothDvc)->Unit = {}
+    var click:(device: BluetoothDvc)->Unit = {}
 
     init {
         val root = b.root as ConstraintLayout

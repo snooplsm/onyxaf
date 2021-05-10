@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "787108030176",
+    "project_id": "onyx-af",
+    "storage_bucket": "onyx-af.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:787108030176:android:8eebc86c821c2b92335285",
+        "android_client_info": {
+          "package_name": "us.wmwm.onyx"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "787108030176-c8rqbba1o1euil5g9caivkgmj69tef9u.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAB-GBw_cM8ojyD_k7XYz0jG38IYQFlziE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "787108030176-c8rqbba1o1euil5g9caivkgmj69tef9u.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
