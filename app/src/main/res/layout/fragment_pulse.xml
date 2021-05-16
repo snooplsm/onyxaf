@@ -34,7 +34,7 @@
       android:layout_height="wrap_content"
       android:text="-"
       android:textSize="70sp"
-      app:layout_constraintBottom_toTopOf="@id/fahrenheit"
+      app:layout_constraintBottom_toTopOf="@id/motorLabel"
       app:layout_constraintEnd_toStartOf="@id/midpoint"
       app:layout_constraintStart_toStartOf="parent"
       app:layout_constraintTop_toTopOf="parent" />
@@ -56,7 +56,7 @@
       android:layout_height="wrap_content"
       android:text="-"
       android:textSize="70sp"
-      app:layout_constraintBottom_toTopOf="@id/fahrenheit"
+      app:layout_constraintBottom_toTopOf="@id/motorLabel"
       app:layout_constraintEnd_toEndOf="parent"
       app:layout_constraintStart_toStartOf="@id/midpoint"
       app:layout_constraintTop_toTopOf="parent" />
@@ -82,8 +82,7 @@
       android:textColor="@color/tab_icon_tint"
       app:layout_constraintBottom_toTopOf="@id/celsius"
       app:layout_constraintEnd_toEndOf="parent"
-      app:layout_constraintStart_toStartOf="parent"
-      app:layout_constraintTop_toBottomOf="@id/motorTemp" />
+      app:layout_constraintStart_toStartOf="parent" />
 
     <TextView
       android:id="@+id/celsius"

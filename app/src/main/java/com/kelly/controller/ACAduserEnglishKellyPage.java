@@ -1,5 +1,6 @@
 package com.kelly.controller;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.ActivityManager.RunningAppProcessInfo;
@@ -33,6 +34,8 @@ import com.kelly.controller.ACAduserEnglishLayoutFormGrid.LayoutParams;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.core.internal.view.SupportMenu;
 import androidx.core.view.MotionEventCompat;
 import androidx.core.view.ViewCompat;
@@ -44,6 +47,8 @@ import java.util.List;
 import java.util.Set;
 
 import us.wmwm.onyx.R;
+
+import static androidx.activity.result.ActivityResultCallerKt.registerForActivityResult;
 
 public class ACAduserEnglishKellyPage extends Activity {
     static final int CAL_DATA_FLASH_ADDRESS = 6144;
@@ -1488,6 +1493,7 @@ public class ACAduserEnglishKellyPage extends Activity {
         super.onCreate(savedInstanceState);
         requestWindowFeature(1);
         setRequestedOrientation(0);
+        //requestPermissions(new String[] {Manifest.permission.ACCESS_FINE_LOCATION}, 300);
         try {
             this.COMType = Integer.parseInt(getIntent().getExtras().getString("comtype"));
             this.deviceKelly.COMType = this.COMType;

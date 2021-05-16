@@ -10,22 +10,24 @@ import java.util.*
 
 class SettingsViewModule(val bt: BluetoothManager) : ViewModel() {
 
-    var data: FlashData? = FlashData(
-        controllerName = "KLS",
-        name = "FOO",
-        newName = "123",
-        softwareVersion2 = 2,
-        version = FlashVersion(
-            softwareVersion = SoftwareVersion.ONE,
-            identifyShowEn = true,
-            calibrationArray = emptyArray()
-        ),
-        volts = 74,
-        voltage = Voltage(60, 90),
-        currentVolt = 74,
-        date = Date(),
-        rawData = intArrayOf(0, 0, 0)
-    )
+    var data: FlashData? =
+        null
+//        FlashData(
+//            controllerName = "KLS",
+//            name = "FOO",
+//            newName = "123",
+//            softwareVersion2 = 2,
+//            version = FlashVersion(
+//                softwareVersion = SoftwareVersion.ONE,
+//                identifyShowEn = true,
+//                calibrationArray = emptyArray()
+//            ),
+//            volts = 74,
+//            voltage = Voltage(60, 90),
+//            currentVolt = 74,
+//            date = Date(),
+//            rawData = intArrayOf(0, 0, 0)
+//        )
 
     val stack = Stack<FlashData>()
 
@@ -34,79 +36,36 @@ class SettingsViewModule(val bt: BluetoothManager) : ViewModel() {
     val flashData = MutableLiveData<FlashData>()
     val onReview = MutableLiveData<Consumable<List<ControllerSettingChange>>>()
 
-    val controllerSettings = MutableLiveData<List<ControllerSetting>>()
+    val controllerSettings = MutableLiveData<List<ControllerSettingPres>>()
 
-    val changedSettings = mutableMapOf<ControllerSettingName,Int>()
+    val changedSettings = mutableMapOf<ControllerSettingName, Int>()
 
     val reviewChanges = MutableLiveData<Consumable<Boolean>>()
 
-    val controllerSettingsList:List<ControllerSetting> = listOf(
-        ControllerSetting(
-            ControllerSettingName.SPEED_MODE_ONE,
-            name = R.string.controller_setting_113,
-            value = 200
-        ),
-        ControllerSetting(
-            ControllerSettingName.SPEED_MODE_TWO,
-            name = R.string.controller_setting_111,
-            value = 70
-        ),
-        ControllerSetting(
-            ControllerSettingName.SPEED_MODE_THREE,
-            name = R.string.controller_setting_109,
-            value = 30
-        ),
-        ControllerSetting(
-            ControllerSettingName.CURRENT_PERCENT,
-            name = R.string.controller_setting_37,
-            value = 60
-        ),
-        ControllerSetting(
-            ControllerSettingName.BATTERY_CURRENT_LIMIT,
-            name = R.string.controller_setting_38,
-            value = 75
-        ),
-        ControllerSetting(
-            ControllerSettingName.RLS_TPS_BRAKE_PERCENT,
-            name = R.string.controller_setting_230,
-            value = 50
-        ),
-        ControllerSetting(
-            ControllerSettingName.NTL_BRAKE_PERCENT,
-            name = R.string.controller_setting_231,
-            value = 50
-        ),
-        ControllerSetting(
-            ControllerSettingName.ACCEL_TIME,
-            name = R.string.controller_setting_239,
-            value = 6
-        ),
-        ControllerSetting(
-            ControllerSettingName.TORQUE_SPEED_KPS,
-            name = R.string.controller_setting_250,
-            value = 25000
-        )
-    )
+    var controllerSettingsList: List<ControllerSetting> = Preset.ONYX
+        .presetData.map {
+            ControllerSetting(it.setting,it.value)
+        }
 
     init {
         bt.data.observeOn(Schedulers.io())
             .subscribeOn(Schedulers.io())
-            .distinctUntilChanged { t1, t2 -> t1.date == t2.date }
             .subscribe {
-                if (data == null) {
                     data = it
                     flashData.postValue(it)
-                } else {
-                    stack.push(it)
-                    overrideFlashData.postValue(Consumable(it))
-                }
+                controllerSettingsList = it.settings
+                    controllerSettings.postValue(it.settings.map {
+                        ControllerSettingPres(setting = it, override = it.value)
+                    })
             }
         if (data == null) {
             needToReadFlashData.postValue(Consumable(true))
         } else {
             flashData.postValue(data)
         }
-        controllerSettings.postValue(controllerSettingsList)
+//        controllerSettings.postValue(controllerSettingsList.map {
+//            ControllerSettingPres(setting = it, override = changedSettings[it.setting] ?: it.value)
+//        })
     }
 
 
@@ -115,7 +74,7 @@ class SettingsViewModule(val bt: BluetoothManager) : ViewModel() {
     }
 
     fun onValueChanged(controllerSetting: ControllerSetting, newValue: Int) {
-        if(controllerSettingsList.first { it.setting==controllerSetting.setting }.value!=newValue) {
+        if (controllerSettingsList.first { it.setting == controllerSetting.setting }.value != newValue) {
             changedSettings[controllerSetting.setting] = newValue
         } else {
             changedSettings.remove(controllerSetting.setting)
@@ -124,17 +83,32 @@ class SettingsViewModule(val bt: BluetoothManager) : ViewModel() {
     }
 
     fun onReviewClicked() {
-        val data = controllerSettingsList.filter {
-            val value = changedSettings[it.setting]
-            value!=null && it.value!=value
+        val data = controllerSettingsList.filter { setting ->
+            val value = changedSettings[setting.setting]
+            value != null && setting.value != value
         }.map {
             ControllerSettingChange(
-                from=it,
+                from = it,
                 to = it.copy(
                     value = changedSettings[it.setting]!!
                 )
             )
         }
         onReview.postValue(Consumable(data))
+    }
+
+    fun onPreset(it: Preset) {
+        it.presetData.forEach { presetItem ->
+            if (controllerSettingsList.first { it.setting == presetItem.setting }.value != presetItem.value) {
+                changedSettings[presetItem.setting] = presetItem.value
+            } else {
+                changedSettings.remove(presetItem.setting)
+            }
+        }
+        controllerSettings.postValue(controllerSettingsList.map {
+            ControllerSettingPres(setting = it, override = changedSettings[it.setting] ?: it.value)
+        })
+        reviewChanges.postValue(Consumable(changedSettings.isNotEmpty()))
+
     }
 }

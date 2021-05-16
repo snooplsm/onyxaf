@@ -4,15 +4,19 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.schedulers.Schedulers
+import us.wmwm.onyx.bluetooth.BluetoothManager
 import java.util.concurrent.TimeUnit
 
-class ReviewSettingsBottomSheetViewModel: ViewModel() {
+class ReviewSettingsBottomSheetViewModel(val bt:BluetoothManager): ViewModel() {
 
     val write = MutableLiveData<Consumable<Boolean>>()
 
     val data = MutableLiveData<List<ReviewPres>>()
 
+    var changes:List<ControllerSettingChange> = emptyList()
+
     fun init(changes:List<ControllerSettingChange>) {
+        this.changes = changes
         val data = listOf(
             listOf(ReviewPres(type=ReviewType.HEADER)),
             changes.map {
@@ -34,6 +38,10 @@ class ReviewSettingsBottomSheetViewModel: ViewModel() {
             .subscribe { t1, t2 ->
                 write.postValue(Consumable(true))
             }
+    }
+
+    fun onWriteClicked() {
+        bt.writeDataToKelly(changes)
     }
 
 }

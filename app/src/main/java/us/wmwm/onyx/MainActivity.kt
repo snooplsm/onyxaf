@@ -1,48 +1,40 @@
 package us.wmwm.onyx
 
-import android.animation.Animator
-import android.animation.ObjectAnimator
-import android.animation.ValueAnimator
-import android.bluetooth.BluetoothDevice
 import android.content.Intent
+import android.graphics.Paint
 import android.os.Bundle
 import android.view.Gravity
-import android.view.animation.Animation
-import android.view.animation.Animation.AnimationListener
+import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
-import androidx.constraintlayout.widget.ConstraintSet
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModel
 import androidx.transition.Slide
 import androidx.transition.TransitionManager
-import com.airbnb.lottie.LottieAnimationView
+import androidx.transition.TransitionSet
+import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 import com.jaeger.library.StatusBarUtil
-import io.reactivex.rxjava3.disposables.Disposable
-import io.reactivex.rxjava3.schedulers.Schedulers
 import org.koin.android.viewmodel.ext.android.viewModel
-import us.wmwm.onyx.bluetooth.BluetoothConnection
-import us.wmwm.onyx.bluetooth.BluetoothManager
 import us.wmwm.onyx.databinding.ActivityMainBinding
-import us.wmwm.onyx.db.BluetoothDvc
-import us.wmwm.onyx.db.OnyxDb
 
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var b: ActivityMainBinding
 
-    val vm:MainActiivtyViewModel by viewModel()
+    val vm: MainActivityViewModel by viewModel()
+    val connectedVm:ConnectedFragmentViewModel by viewModel()
 
     val icons = listOf(
-            ViewPage(icon = R.raw.lottie_pulse,
-                    frag = { PulseFragment() }),
-            ViewPage(icon = R.raw.lottie_settings,
-                    frag = { SettingsFragment() })).mapIndexed { index, viewPage ->
+        ViewPage(icon = R.raw.lottie_pulse,
+            frag = { PulseFragment() }),
+        ViewPage(icon = R.raw.lottie_settings,
+            frag = { SettingsFragment() })
+    ).mapIndexed { index, viewPage ->
         index to viewPage
     }.toMap()
+
+    val listener = PageListenerForReize()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         StatusBarUtil.setTransparent(this)
@@ -52,86 +44,59 @@ class MainActivity : AppCompatActivity() {
 
         b.viewPager.adapter = ViewPagerAdapter(icons, this)
 
-        TabLayoutMediator(b.strip, b.viewPager) { tab, position ->
+        TabLayoutMediator(b.strip, b.viewPager, true, true) { tab, position ->
             val res = icons[position]?.icon ?: error("Not fond")
-            val ctx = MainActivity@this
+            val ctx = MainActivity@ this
             tab.customView = LottieTabView(ctx).apply {
                 bind(res)
             }
         }.attach()
-        var animator:ObjectAnimator?=null
-        val deanimator = ObjectAnimator.ofFloat(b.bikeImage, "translationX", -200f).apply {
-            duration = 2000
-            addListener(object : Animator.AnimatorListener {
-                override fun onAnimationStart(p0: Animator?) {
-                    b.bikeImage.scaleX = -1f
-                }
-
-                override fun onAnimationEnd(p0: Animator?) {
-                    b.bikeImage.translationX = -800f
-                    animator?.startDelay = 10000
-                    animator?.start()
-                }
-
-                override fun onAnimationCancel(p0: Animator?) {
-
-                }
-
-                override fun onAnimationRepeat(p0: Animator?) {
-
-                }
-
-            })
+        b.motorStay.setOnClickListener {
+            MotorStayBottomSheetDialogFragment().show(supportFragmentManager,"motor-stay")
         }
-        deanimator.startDelay = 5000
-        animator = ObjectAnimator.ofFloat(b.bikeImage, "translationX", 1200f).apply {
-            duration = 2000
-            addListener(object : Animator.AnimatorListener {
-                override fun onAnimationStart(p0: Animator?) {
-                    b.bikeImage.scaleX = 1f
-                    b.bikeImage.translationX = -800f
-                }
-
-                override fun onAnimationEnd(p0: Animator?) {
-                    b.bikeImage.translationX = 1200f
-                    deanimator.start()
-                }
-
-                override fun onAnimationCancel(p0: Animator?) {
-
-                }
-
-                override fun onAnimationRepeat(p0: Animator?) {
-
-                }
-
-
-            })
-        }
-
-        animator.startDelay = 1000
-
-        //animator.start()
-
-
-
-
+        b.viewPager.registerOnPageChangeCallback(listener)
         b.strip.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab) {
                 val v = tab.customView as LottieTabView
                 v.play()
-                when((icons[tab.position] ?: error("")).icon) {
-                    R.raw.lottie_pulse-> {
+                when ((icons[tab.position] ?: error("")).icon) {
+                    R.raw.lottie_pulse -> {
                         vm.resumePulse()
+                        listener.pageAfterAction = {
+                            val slide = Slide(Gravity.START)
+                            //slide.interpolator = OvershootInterpolator()
+                            TransitionManager.beginDelayedTransition(b.logo.parent as ViewGroup,slide)
+                            b.logoSmall.gone()
+                            b.logo.visible()
+                            b.spacer.visible()
+                        }
+                    }
+                    R.raw.lottie_settings -> {
+
+                        listener.pageAfterAction = {
+                            val slide = Slide(Gravity.START)
+                            val set = TransitionSet()
+                            slide.addTarget(b.logoSmall)
+                            set.addTransition(slide)
+                            val slideUp = Slide(Gravity.START)
+                            slideUp.addTarget(b.logo)
+                            set.addTransition(slideUp)
+                            TransitionManager.beginDelayedTransition(b.logo.parent as ViewGroup,set)
+                            b.logo.gone()
+                            b.logoSmall.visible()
+                            b.spacer.gone()
+                        }
                     }
                 }
+
             }
 
             override fun onTabUnselected(tab: TabLayout.Tab) {
                 val v = tab.customView as LottieTabView
                 v.stop()
-                when((icons[tab.position] ?: error("")).icon) {
-                    R.raw.lottie_pulse-> {
+                when ((icons[tab.position] ?: error("")).icon) {
+                    R.raw.lottie_pulse -> {
+
                         vm.pausePulse()
                     }
                 }
@@ -145,11 +110,13 @@ class MainActivity : AppCompatActivity() {
 
         vm.connected.observe(this, Observer {
             b.connected.visible()
-            b.connected.text = resources.getString(R.string.connected_to_,it.name)
-            //b.logo.setColorFilter(ResourcesCompat.getColor(resources,R.color.online_green,theme))
+            b.connected.text = resources.getString(R.string.connected_to_, it.name)
             b.strips.visible()
             b.connectView.gone()
-
+            b.connected.setOnClickListener {v->
+                connectedVm.init(it)
+                ConnectedBottomSheetDialogFragment().show(supportFragmentManager,"connected")
+            }
         })
 
         vm.disconnected.observe(this, Observer {
@@ -157,6 +124,7 @@ class MainActivity : AppCompatActivity() {
             b.connectView.visible()
             b.connected.gone()
         })
+
 //        b.strips.visible()
 //        b.connectView.gone()
         b.strips.hide()
@@ -172,59 +140,34 @@ class MainActivity : AppCompatActivity() {
     }
 }
 
-class UpdateListener(val lot:LottieAnimationView) : ValueAnimator.AnimatorUpdateListener {
-    var count = 0.0f
-    var init:Float = 0f
-    override fun onAnimationUpdate(p0: ValueAnimator) {
-        val diff = p0.animatedFraction-init
-        count+=diff
-        init = p0.animatedFraction
-        if(p0.animatedFraction==1f) {
-            init = 0f
-        }
-        if(count>=1.5f) {
-            lot.pauseAnimation()
-            lot.removeUpdateListener(this)
+class PageListenerForReize : ViewPager2.OnPageChangeCallback() {
+
+    var pageAfterAction: () -> Unit = { }
+
+    override fun onPageScrollStateChanged(state: Int) {
+        super.onPageScrollStateChanged(state)
+        println("statechanged $state")
+    }
+
+    override fun onPageScrolled(
+        position: Int,
+        positionOffset: Float,
+        positionOffsetPixels: Int
+    ) {
+        super.onPageScrolled(position, positionOffset, positionOffsetPixels)
+        println("onPageScrolled $position $positionOffset")
+        when (positionOffset) {
+            1.0f, 0f -> {
+                pageAfterAction.invoke()
+                pageAfterAction = {}
+            }
         }
     }
 
+    override fun onPageSelected(position: Int) {
+        println("selected $position")
+        super.onPageSelected(position)
+    }
 }
 
 
-class MainActiivtyViewModel(val db: OnyxDb, val manager: BluetoothManager) : ViewModel() {
-
-    fun pausePulse() {
-        manager.pausePulse()
-    }
-
-    fun resumePulse() {
-        manager.resumePulse()
-    }
-
-    var conn: Disposable
-
-    val connected = MutableLiveData<BluetoothDvc>()
-
-    val disconnected = MutableLiveData<BluetoothDevice>()
-
-    init {
-        conn = manager.connected.observeOn(Schedulers.io())
-                .subscribeOn(Schedulers.io())
-                .subscribe({
-                    val dvc = db.device().findByDevice(
-                        it.first.address
-                    )?: BluetoothDvc(
-                        device = it.first.address,
-                        type = it.first.type,
-                        name = it.first.name,
-                        rssi = Integer.MIN_VALUE
-                    )
-                    when(it.second) {
-                        BluetoothConnection.CONNECTED-> connected.postValue(dvc)
-                        else-> disconnected.postValue(it.first!!)
-                    }
-                }, {
-
-                })
-    }
-}

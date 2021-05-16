@@ -48,7 +48,6 @@ class ConnectFragmentViewModel(
         manager.connected.subscribeOn(Schedulers.io())
                 .observeOn(Schedulers.io())
                 .subscribe {
-                    println(it)
                     if(it.second==BluetoothConnection.CONNECTED) {
                         manager.sendCommand(Command.OPEN)
                     }

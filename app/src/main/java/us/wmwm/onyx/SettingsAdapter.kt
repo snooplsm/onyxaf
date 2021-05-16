@@ -6,20 +6,20 @@ import androidx.recyclerview.widget.ListAdapter
 import us.wmwm.onyx.common.ControllerSetting
 import us.wmwm.onyx.common.FormSlider
 
-class SettingsAdapter : ListAdapter<ControllerSetting, BaseViewHolder>(object :
-    DiffUtil.ItemCallback<ControllerSetting>() {
+class SettingsAdapter : ListAdapter<ControllerSettingPres, BaseViewHolder>(object :
+    DiffUtil.ItemCallback<ControllerSettingPres>() {
 
 
 
-    override fun areItemsTheSame(oldItem: ControllerSetting, newItem: ControllerSetting): Boolean {
-        return oldItem.setting == newItem.setting
+    override fun areItemsTheSame(oldItem: ControllerSettingPres, newItem: ControllerSettingPres): Boolean {
+        return false
     }
 
     override fun areContentsTheSame(
-        oldItem: ControllerSetting,
-        newItem: ControllerSetting
+        oldItem: ControllerSettingPres,
+        newItem: ControllerSettingPres
     ): Boolean {
-        return oldItem.hashCode() == newItem.hashCode()
+        return false
     }
 
 }) {
@@ -44,3 +44,8 @@ class SettingsAdapter : ListAdapter<ControllerSetting, BaseViewHolder>(object :
         view.bind(data)
     }
 }
+
+data class ControllerSettingPres(
+    val setting:ControllerSetting,
+    val override:Int
+)

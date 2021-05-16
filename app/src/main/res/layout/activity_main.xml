@@ -9,7 +9,10 @@
   tools:context=".MainActivity">
 
   <TextView
+    android:foreground="?selectableItemBackgroundBorderless"
     android:id="@+id/connected"
+    android:padding="5dp"
+    android:background="@drawable/clear_round_button"
     android:layout_width="wrap_content"
     android:text="@string/connected"
     app:layout_constraintTop_toTopOf="parent"
@@ -18,24 +21,37 @@
     app:layout_constraintStart_toStartOf="parent"
     app:layout_constraintEnd_toEndOf="parent"
     android:textColor="@color/online_green"
-    android:layout_height="40dp"/>
+    android:layout_height="48dp"/>
 
   <ImageView
+    android:id="@+id/logo_small"
     android:layout_width="30dp"
-    android:id="@+id/bike_image"
-    android:contentDescription="@string/cd_clipart_of_small_onyx_bike"
-    app:layout_constraintDimensionRatio="W,1:1"
-    android:src="@drawable/ic_onyxbike"
-    app:tint="#cccccc"
     android:layout_height="30dp"
+    android:layout_marginStart="10dp"
+    android:layout_marginTop="5dp"
+    android:src="@drawable/ic_onyx_logo"
+    android:foreground="?selectableItemBackgroundBorderless"
+    android:visibility="gone"
+    android:contentDescription="@string/cd_onyx_logo"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toTopOf="parent" />
+
+  <ImageView
+    android:id="@+id/motor_stay"
+    android:layout_width="30dp"
+    android:layout_height="30dp"
+    android:layout_marginEnd="10dp"
+    android:src="@drawable/ic_motor_stay_01"
+    android:contentDescription="@string/cd_motor_stay"
+    app:layout_constraintEnd_toEndOf="parent"
     app:layout_constraintBottom_toTopOf="@id/hr"
-    app:layout_constraintStart_toStartOf="parent"/>
+    app:layout_constraintTop_toTopOf="parent" />
 
   <View
     android:id="@+id/hr"
     android:layout_width="match_parent"
     android:layout_height="1dp"
-    android:layout_marginTop="40dp"
+    android:layout_marginTop="50dp"
     android:background="#cbccde"
     app:layout_constraintTop_toTopOf="parent" />
 
@@ -53,7 +69,7 @@
     android:layout_height="4dp"
     android:background="#1b1c38"
     android:paddingBottom="4dp"
-    android:visibility="gone"
+    android:visibility="visible"
     android:id="@+id/space"
     app:layout_constraintBottom_toBottomOf="@id/strip" />
 
@@ -68,11 +84,17 @@
     app:layout_constraintStart_toStartOf="parent"
     app:layout_constraintTop_toBottomOf="@id/hr" />
 
+  <View
+    android:layout_width="wrap_content"
+    android:id="@+id/spacer"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toBottomOf="@id/logo"
+    android:layout_height="40dp"/>
+
   <com.google.android.material.tabs.TabLayout
     android:id="@+id/strip"
     android:layout_width="0dp"
     android:layout_height="wrap_content"
-    android:layout_marginTop="40dp"
     app:layout_constraintEnd_toEndOf="parent"
     app:layout_constraintStart_toStartOf="parent"
     app:layout_constraintTop_toBottomOf="@id/logo"
@@ -104,7 +126,7 @@
 
     <androidx.fragment.app.FragmentContainerView
       android:id="@+id/connectFragment"
-      android:name="us.wmwm.onyx.SettingsFragment"
+      android:name="us.wmwm.onyx.ConnectFragment"
       android:layout_width="match_parent"
       android:layout_height="match_parent" />
   </FrameLayout>

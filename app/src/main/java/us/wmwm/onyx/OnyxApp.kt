@@ -2,6 +2,8 @@ package us.wmwm.onyx
 
 import android.app.Application
 import android.bluetooth.BluetoothAdapter
+import android.os.StrictMode
+import android.os.StrictMode.ThreadPolicy
 import androidx.room.Room
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
@@ -10,6 +12,7 @@ import org.koin.core.context.startKoin
 import org.koin.dsl.module
 import us.wmwm.onyx.bluetooth.BluetoothManager
 import us.wmwm.onyx.db.OnyxDb
+
 
 class OnyxApp : Application() {
 
@@ -35,7 +38,7 @@ class OnyxApp : Application() {
         }
 
         viewModel {
-            MainActiivtyViewModel(get(),get())
+            MainActivityViewModel(get(),get())
         }
         viewModel {
             ConnectFragmentViewModel(get(),get(),get())
@@ -50,14 +53,21 @@ class OnyxApp : Application() {
             BikeConnectDialogFragmentViewModel(get())
         }
         viewModel {
-            ReviewSettingsBottomSheetViewModel()
+            ReviewSettingsBottomSheetViewModel(get())
         }
+
+        viewModel {
+            ConnectedFragmentViewModel(get())
+        }
+
 
     }
 
     override fun onCreate() {
         super.onCreate()
+        val policy = ThreadPolicy.Builder().permitAll().build()
 
+        StrictMode.setThreadPolicy(policy)
         startKoin{
             androidLogger()
             androidContext(this@OnyxApp)

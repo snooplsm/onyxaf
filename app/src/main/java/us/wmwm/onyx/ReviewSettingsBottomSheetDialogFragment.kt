@@ -54,6 +54,7 @@ class ReviewSettingsBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     }
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setStyle(STYLE_NORMAL, R.style.BottomSheetDialogTheme)
@@ -75,6 +76,12 @@ class ReviewSettingsBottomSheetDialogFragment : BottomSheetDialogFragment() {
         vm.data.observe(viewLifecycleOwner, Observer {
             adapter.submitList(it)
         })
+
+        b.write.setOnClickListener {
+            it.isEnabled = false
+            isCancelable = false
+            vm.onWriteClicked()
+        }
     }
 
     override fun onResume() {
@@ -149,7 +156,7 @@ class ReviewSettingView(context: Context, attrs: AttributeSet? = null) :
         ReviewSettingBinding.inflate(LayoutInflater.from(context), this, true)
 
     fun bind(change: ControllerSettingChange) {
-        b.name.setText(change.from.name)
+        b.name.setText(resources.getIdentifier("controller_setting_${change.from.setting.code}","string",context.packageName))
         b.old.text = change.from.value.toString()
         b.newV.text = change.to.value.toString()
     }

@@ -11,6 +11,10 @@ import io.reactivex.rxjava3.core.SingleOnSubscribe
 import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.schedulers.Schedulers
 import io.reactivex.rxjava3.subjects.BehaviorSubject
+import us.wmwm.onyx.ControllerSettingChange
+import us.wmwm.onyx.Preset
+import us.wmwm.onyx.common.ControllerSetting
+import us.wmwm.onyx.db.BluetoothDvc
 import java.io.InputStream
 import java.io.OutputStream
 import java.util.*
@@ -28,6 +32,8 @@ class BluetoothManager(val adapter: BluetoothAdapter) {
     private val _connected = BehaviorSubject.create<Pair<BluetoothDevice, BluetoothConnection>>()
 
     private val _data = BehaviorSubject.create<FlashData>()
+
+
     private val _monitor = BehaviorSubject.create<MonitorData>()
 
     private var readerDis: Disposable? = null
@@ -51,27 +57,41 @@ class BluetoothManager(val adapter: BluetoothAdapter) {
             return socket?.isConnected == true
         }
 
+    fun connect(device:BluetoothDvc) {
+        this.device = adapter.getRemoteDevice(device.device)
+        connect(this.device!!)
+    }
+
     fun connect(device: BluetoothDevice) {
         this.device = device
-        val bonded = adapter.bondedDevices
-
-        if (!bonded.contains(device)) {
-            _connected.onNext(device to BluetoothConnection.BONDING)
-            device.createBond()
+        if(device.name=="UNKNOWN" || device.name==null) {
             return
         }
-        _connected.onNext(device to BluetoothConnection.CONNECTING)
-        val socket = device.createRfcommSocketToServiceRecord(MY_UUID)
-        this.socket = socket
-        try {
-            socket.connect()
-            input = socket.inputStream
-            output = socket.outputStream
-            deviceKelly.setSocket(socket)
-        } catch (e: Exception) {
-            socket.close()
-        }
-        _connected.onNext(device to socket.isConnected.btConnection)
+        val bonded = adapter.bondedDevices
+
+        Single.just(1)
+            .observeOn(Schedulers.io())
+            .subscribeOn(Schedulers.io())
+            .subscribe { t1, t2 ->
+                if (!bonded.contains(device)) {
+                    _connected.onNext(device to BluetoothConnection.BONDING)
+                    device.createBond()
+                    return@subscribe
+                }
+                _connected.onNext(device to BluetoothConnection.CONNECTING)
+                val socket = device.createRfcommSocketToServiceRecord(MY_UUID)
+                this.socket = socket
+                try {
+                    socket.connect()
+                    input = socket.inputStream
+                    output = socket.outputStream
+                    deviceKelly.setSocket(socket)
+                } catch (e: Exception) {
+                    socket.close()
+                }
+                _connected.onNext(device to socket.isConnected.btConnection)
+            }
+
     }
 
     fun sendCommand(command: Command) {
@@ -82,7 +102,7 @@ class BluetoothManager(val adapter: BluetoothAdapter) {
                     isConnected
                 }
                 .subscribe({
-                    println("sent command")
+                    //read
                 }, {
                     it.printStackTrace()
                 })
@@ -175,6 +195,7 @@ class BluetoothManager(val adapter: BluetoothAdapter) {
             //this.headView.removeAllViews()
             //ShowKellypageCalibration()
         } catch (e3: java.lang.Exception) {
+            throw RuntimeException()
             //showLogInfo("Interface Show Error!Please Try Again!")
         }
 //        if (this.DEBUG) {
@@ -188,7 +209,6 @@ class BluetoothManager(val adapter: BluetoothAdapter) {
     var readThreadSub:Disposable?=null
 
     fun startReadThread() {
-        println("starting read thread")
         if(readThreadSub?.isDisposed==false) {
             return
         }
@@ -226,7 +246,7 @@ class BluetoothManager(val adapter: BluetoothAdapter) {
     }
 
     fun onRead(k: FlashData) {
-
+        this._data.onNext(k)
     }
 
     fun onMonitor(monitorMap: MutableMap<Int, Int>) {
@@ -242,16 +262,163 @@ class BluetoothManager(val adapter: BluetoothAdapter) {
     }
 
     fun pausePulse() {
+        if(!this::monitorThread.isInitialized) return
         monitorThread.pause()
     }
 
     fun resumePulse() {
+        if(!this::monitorThread.isInitialized) return
         monitorThread.resumed()
     }
 
     fun onOpen() {
         startReadThread()
         startMonitorThread()
+    }
+
+    fun disconnect() {
+        socket?.close()
+        input?.close()
+        output?.close()
+        device?.let {
+            _connected.onNext(Pair(it,socket?.isConnected?.btConnection?:BluetoothConnection.DISCONNECTED))
+        }
+
+    }
+
+    fun writeDataToKelly(value: List<ControllerSettingChange>) {
+        val newFLash = this.DataValue.copyOf()
+        value.forEach {
+            newFLash[it.from.setting.code] = it.to.value
+        }
+        sendDataToKelly(newFLash)
+    }
+
+    private fun sendDataToKelly(data:IntArray) {
+        var j: Int
+        var i: Int
+        var Write_ok = 1
+        var temp_return = 0
+
+            if (isConnected) {
+                try {
+                    deviceKelly.ETS_TX_CMD = (-15).toByte()
+                    deviceKelly.ETS_TX_BYTES = 0.toByte()
+                    j = 0
+                    loop0@ while (j < 2) {
+                        deviceKelly.sendcmd()
+                        i = 0
+                        while (i < 5) {
+                            temp_return = deviceKelly.readcmd()
+                            if (temp_return == 1) {
+                                break@loop0
+                            }
+                            i++
+                        }
+                        j++
+                    }
+                    if (temp_return != 1) {
+                        throw RuntimeException("Open Flash Failed!")
+                        return
+                    }
+                } catch (e: java.lang.Exception) {
+                    throw RuntimeException("Open Flash Internal Error!")
+                }
+            } else {
+                throw RuntimeException("Device is not opened!Please open device first!")
+                return
+            }
+
+
+                i = 0
+                while (i < 40) {
+                    if (i < 39) {
+                        deviceKelly.ETS_TX_CMD = (-13).toByte()
+                        deviceKelly.ETS_TX_BYTES = 16.toByte()
+                        deviceKelly.ETS_TX_DATA[0] = (i * 13).toByte()
+                        deviceKelly.ETS_TX_DATA[1] = 13.toByte()
+                        deviceKelly.ETS_TX_DATA[2] = (i * 13 shr 8).toByte()
+                        j = 0
+                        while (j < 13) {
+                            deviceKelly.ETS_TX_DATA[j + 3] =
+                                data[i * 13 + j].toByte()
+                            j++
+                        }
+                        j = 0
+                        while (j < 3) {
+                            try {
+                                deviceKelly.sendcmd()
+                                while (0 < 10) {
+                                    temp_return = deviceKelly.readcmd()
+                                    if (temp_return == 1) {
+                                        break
+                                    }
+                                    i++
+                                }
+                                j++
+                            } catch (e2: java.lang.Exception) {
+                                throw RuntimeException("Write Error!")
+                            }
+                        }
+                        if (temp_return != 1) {
+                            Write_ok = 0
+                        }
+                    } else if (i == 39) {
+                        try {
+                            deviceKelly.ETS_TX_CMD = (-13).toByte()
+                            deviceKelly.ETS_TX_BYTES = 8.toByte()
+                            deviceKelly.ETS_TX_DATA[0] = (-5).toByte()
+                            deviceKelly.ETS_TX_DATA[1] = 5.toByte()
+                            deviceKelly.ETS_TX_DATA[2] = 1.toByte()
+                            j = 507
+                            while (j < 512) {
+                                deviceKelly.ETS_TX_DATA[j - 507 + 3] =
+                                    data[j].toByte()
+                                j++
+                            }
+                            j = 0
+                            while (j < 3) {
+                                deviceKelly.sendcmd()
+                                while (0 < 10) {
+                                    temp_return = deviceKelly.readcmd()
+                                    if (temp_return == 1) {
+                                        break
+                                    }
+                                    i++
+                                }
+                                j++
+                            }
+                            if (temp_return != 1) {
+                                Write_ok = 0
+                            }
+                        } catch (e3: java.lang.Exception) {
+                            throw RuntimeException("Write Error!")
+                        }
+                    }
+                    i++
+                }
+                deviceKelly.ETS_TX_CMD = (-12).toByte()
+                deviceKelly.ETS_TX_BYTES = 0.toByte()
+                deviceKelly.sendcmd()
+                i = 0
+                while (i < 30) {
+                    temp_return = deviceKelly.readcmd()
+                    if (temp_return == 1) {
+                        break
+                    }
+                    i++
+                }
+                if (temp_return != 1) {
+                    throw RuntimeException("Write To Flash Error!")
+                    deviceKelly.closeUsbComDevice()
+                    return
+                } else if (Write_ok == 0) {
+                    throw RuntimeException("Write Data Error!")
+                    return
+                }
+
+        println("Data Write Completely!")
+
     }
 }
 
@@ -268,7 +435,7 @@ class SendCommandOnSubscribe(val command: Command, input: InputStream, output: O
 
     object def {
         val commandToLambda = mutableMapOf(Command.OPEN to OpenCommandReader, Command.READ_FLASH to FlashReadCommand)
-        val commandToParser = mutableMapOf(Command.READ_FLASH to FlashParser)
+        //val commandToParser = mutableMapOf(Command.READ_FLASH to FlashParser)
     }
 
     override fun subscribe(emitter: SingleEmitter<IntArray>) {
@@ -279,6 +446,7 @@ class SendCommandOnSubscribe(val command: Command, input: InputStream, output: O
         try {
             val data = lambda.invoke(bt, input, output)
             emitter.onSuccess(data)
+
         } catch (e: java.lang.Exception) {
             if (emitter.isDisposed) {
                 return
@@ -375,12 +543,10 @@ object OpenCommandReader : (BluetoothManager, InputStream, OutputStream) -> IntA
 
 object FlashReadCommand : (BluetoothManager, InputStream, OutputStream) -> IntArray {
     override fun invoke(b: BluetoothManager, p1: InputStream, p2: OutputStream): IntArray {
-        println("f")
         try {
             val data = b.readDataFromKelly()
             val k = FlashParser(data)
             b.onRead(k)
-            println(k)
         } catch (e: java.lang.Exception) {
             println("err")
             throw java.lang.RuntimeException(e)
@@ -503,10 +669,13 @@ object FlashParser : (IntArray) -> FlashData {
             val percent = p1[9]
             percent
         }
-        val limit = ids[38].run {
-            p1[38]
+        val settings = Preset.ONYX.presetData.map {
+            ControllerSetting(
+                setting = it.setting,
+                value = p1[it.setting.code]
+            )
         }
-        return FlashData(
+        val data = FlashData(
                 controllerName = Temp_asc,
                 version = flashVersion,
                 softwareVersion2 = Soft_Version2,
@@ -515,8 +684,10 @@ object FlashParser : (IntArray) -> FlashData {
                 volts = volts.toInt(),
                 voltage = voltage,
                 currentVolt = currentVolt,
+                settings = settings,
                 rawData = p1
         )
+        return data
     }
 
 }
@@ -542,6 +713,7 @@ data class FlashData(
         val voltage:Voltage?,
         val currentVolt:Int,
         val date:Date = Date(),
+        val settings:List<ControllerSetting>,
         val rawData:IntArray
 )
 

@@ -203,6 +203,7 @@ class ConnectFragment : Fragment() {
         })
 
         b.connect.setOnClickListener {
+            it.hide()
             discovery()
         }
 
@@ -212,12 +213,14 @@ class ConnectFragment : Fragment() {
 
         vm.onDiscovering.observe(viewLifecycleOwner, Observer {
             if (it) {
-                b.connect.text = "Finding your ONYX"
-                b.connect.hide()
+                b.connect.text = ""
+                b.connecting.visible()
+                b.connect.gone()
                 b.scanning.visible()
                 b.countdown.visible()
             } else {
                 b.connect.text = "connect to bike"
+                b.connecting.gone()
                 b.connect.visible()
                 b.scanning.gone()
                 b.countdown.gone()

@@ -2,10 +2,13 @@ package us.wmwm.onyx
 
 import android.graphics.Paint
 import android.os.Bundle
+import android.text.SpannableStringBuilder
+import android.text.Spanned
+import android.text.method.LinkMovementMethod
+import android.text.style.URLSpan
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
@@ -14,6 +17,7 @@ import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.schedulers.Schedulers
 import org.koin.android.viewmodel.ext.android.sharedViewModel
 import us.wmwm.onyx.databinding.FragmentBikeFoundBottomSheetBinding
+import us.wmwm.onyx.databinding.FragmentMotorStaysBinding
 import us.wmwm.onyx.db.BluetoothDvc
 import us.wmwm.onyx.db.OnyxDb
 
@@ -25,7 +29,7 @@ class BikeConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     val vm: BikeConnectDialogFragmentViewModel by sharedViewModel()
 
-    val cm:MainActiivtyViewModel by sharedViewModel()
+    val cm:MainActivityViewModel by sharedViewModel()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -37,7 +41,7 @@ class BikeConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     override fun onDestroyView() {
-        _b?.edit?.handler?.removeCallbacksAndMessages(null)
+        //_b?.edit?.handler?.removeCallbacksAndMessages(null)
         super.onDestroyView()
     }
 
@@ -54,66 +58,24 @@ class BikeConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
             b.bikeName.text = it.nickname?:it.name
             b.oldBikeName.text = it.name
 
-            when(it.nickname) {
+            val vis = when(it.nickname) {
                 null-> View.GONE
-                else->View.VISIBLE
+                else-> View.VISIBLE
             }
+            b.bikeName.visible()
+            b.oldBikeName.visibility = vis
+
             b.yes.visible()
-
-            b.no.visible()
-
-            b.no.setOnClickListener {
-                vm.onNo()
-                dismiss()
-            }
 
             b.yes.setOnClickListener {
                 vm.onyes()
                 dismiss()
             }
-        })
-//        b.rename.setOnClickListener {
-//            vm.onRename()
-//        }
 
-        vm.rename.observe(viewLifecycleOwner, Observer {
-            val it = it.consume()?:return@Observer
-            b.edit.visible()
-            b.edit.setText(it.name)
-            b.bikeName.hide()
-            b.rename.gone()
-            b.save.visible()
-            b.edit?.handler.postDelayed({
-                b.edit?.requestFocus()
-                //b.edit.setSelection(b.edit.length())
-            },100)
-            b.edit.addTextChangedListener { k->
-                if(k.toString().trim()!=it.name) {
-                    b.dismiss.visible()
-                }
-            }
-            b.dismiss.setOnClickListener {v->
-                if(b.edit.text.toString()!=it.device) {
-                    b.edit.setText(it.device)
-                } else {
-                    vm.onDismiss()
-                }
+            b.dismiss.setOnClickListener {
+                dismiss()
             }
         })
-
-        vm.normal.observe(viewLifecycleOwner, Observer {
-            val it = it.consume()?:return@Observer
-            b.bikeName.text = it.nickname?:it.name
-            b.edit.hide()
-            b.bikeName.visible()
-            //b.rename.visible()
-            b.save.gone()
-            b.dismiss.gone()
-        })
-
-        b.save.setOnClickListener {
-            vm.save(b.edit.text.toString())
-        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -172,4 +134,43 @@ class BikeConnectDialogFragmentViewModel(val db: OnyxDb) : ViewModel() {
 
 enum class NoYes {
     no,yes
+}
+
+class MotorStayBottomSheetDialogFragment : BottomSheetDialogFragment() {
+
+    var _b:FragmentMotorStaysBinding?=null
+    val b:FragmentMotorStaysBinding
+    get() {
+        return _b!!
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setStyle(STYLE_NORMAL, R.style.BottomSheetDialogTheme);
+    }
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        _b = FragmentMotorStaysBinding.inflate(inflater)
+        return b.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        val str = resources.getString(R.string.however_some_people_want_to_part_with_money_to_show_support_so_if_you_send_25_to_ryan_gravener_on_venmo_with_a_comment_of_your_address_i_ll_mail_you_some_motor_stays)
+
+        val span = str.replaceWithSpans {
+            when(it) {
+                "@Ryan-Gravener"-> SpannableStringBuilder(it).apply {
+                    setSpan(URLSpan("https://venmo.com/code?user_id=2182932026359808304"),0,it.length,Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                }
+                else-> SpannableStringBuilder(it)
+            }
+        }
+        b.venmoString.movementMethod = LinkMovementMethod.getInstance()
+        b.venmoString.text = span
+    }
 }

@@ -75,9 +75,4 @@ class BikesFoundBottomSheetDialogFragment : BottomSheetDialogFragment() {
             dismiss()
         })
     }
-
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-        (view!!.parent as View).setBackgroundColor(Color.TRANSPARENT)
-    }
 }

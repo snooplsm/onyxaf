@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="match_parent"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  android:orientation="vertical"
+  android:layout_height="match_parent">
+
+  <View
+    android:layout_width="0dp"
+    android:layout_height="0dp"
+    app:layout_constraintStart_toStartOf="parent"
+    android:layout_margin="@dimen/twenty"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintTop_toTopOf="parent"
+    android:background="@drawable/bottom_sheet_background"
+    app:layout_constraintBottom_toBottomOf="parent"/>
+
+  <ImageView
+    android:layout_width="200dp"
+    android:layout_marginTop="40dp"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintEnd_toEndOf="parent"
+    android:id="@+id/stay"
+    app:layout_constraintTop_toTopOf="parent"
+    android:src="@drawable/ic_motor_stay_01_gradient"
+    android:layout_height="wrap_content"
+     />
+
+  <TextView
+    android:layout_width="match_parent"
+    android:padding="20dp"
+    android:layout_marginStart="20dp"
+    android:layout_marginEnd="20dp"
+    android:id="@+id/free"
+    app:layout_constraintTop_toBottomOf="@id/stay"
+    android:text="@string/this_app_is_free_because_everything_that_is_great_in_life_is"
+    android:layout_height="wrap_content"/>
+
+  <TextView
+    android:padding="20dp"
+    android:layout_marginStart="20dp"
+    android:layout_marginEnd="20dp"
+    android:layout_width="match_parent"
+    app:layout_constraintTop_toBottomOf="@id/free"
+    android:id="@+id/venmoString"
+    android:textColorLink="@color/purple_200"
+    android:text="@string/however_some_people_want_to_part_with_money_to_show_support_so_if_you_send_25_to_ryan_gravener_on_venmo_with_a_comment_of_your_address_i_ll_mail_you_some_motor_stays"
+    android:layout_height="wrap_content"/>
+
+  <ImageView
+    android:layout_width="0dp"
+    android:id="@+id/signature"
+    app:layout_constraintWidth_percent=".4"
+    app:layout_constraintTop_toBottomOf="@id/venmoString"
+    android:layout_height="wrap_content"
+    android:adjustViewBounds="true"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:tint="@color/white"
+    android:layout_marginEnd="-90dp"
+    android:src="@drawable/ic_screen_shot_2021_05_15_at_11_12_19_pm_01"/>
+
+    <View
+      android:layout_width="match_parent"
+      android:layout_height="40dp"
+      app:layout_constraintTop_toBottomOf="@id/signature"/>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

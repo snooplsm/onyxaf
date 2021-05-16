@@ -5,9 +5,8 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.SeekBar
-import androidx.annotation.IntegerRes
-import androidx.annotation.StringRes
 import androidx.constraintlayout.widget.ConstraintLayout
+import us.wmwm.onyx.ControllerSettingPres
 import us.wmwm.onyx.databinding.FormSliderBinding
 
 @SuppressLint("ResourceType")
@@ -25,7 +24,7 @@ class FormSlider(context: Context, attrs: AttributeSet? = null) : ConstraintLayo
         }.toMap()
     }
 
-    var onSettingChanged: (ControllerSetting, Int) -> Unit = { controllerSetting: ControllerSetting, i: Int -> }
+    var onSettingChanged: (ControllerSetting, Int) -> Unit = { controllerSetting: ControllerSetting, _: Int -> }
 
     val b: FormSliderBinding = FormSliderBinding.inflate(LayoutInflater.from(context), this, true)
 
@@ -34,7 +33,8 @@ class FormSlider(context: Context, attrs: AttributeSet? = null) : ConstraintLayo
         clipToPadding = false
     }
 
-    fun bind(option: ControllerSetting) {
+    fun bind(pres: ControllerSettingPres) {
+        val option = pres.setting
         b.seek.apply {
             min = option.setting.range.first
             max = option.setting.range.last
@@ -64,14 +64,15 @@ class FormSlider(context: Context, attrs: AttributeSet? = null) : ConstraintLayo
             }
 
         })
-        b.label.setText(option.name)
+        if(pres.override!=pres.setting.value) {
+            b.value.text = "[${pres.override}]"
+        }
+        b.label.setText(resources.getIdentifier("controller_setting_${pres.setting.setting.code}","string",context.packageName))
     }
 }
 
 data class ControllerSetting(
     val setting: ControllerSettingName,
-    @StringRes
-    val name: Int,
     val value: Int
 )
 
@@ -111,5 +112,13 @@ enum class ControllerSettingName(val code: Int, val range: IntRange) {
     TORQUE_SPEED_KPS(
         code = 250,
         range = 0..32767
+    ),
+    TORQUE_SPEED_KI(
+        code = 252,
+        range = 0..32767
+    ),
+    SPEED_ERR_LIMIT(
+        code = 254,
+        range = 50..4095
     )
 }

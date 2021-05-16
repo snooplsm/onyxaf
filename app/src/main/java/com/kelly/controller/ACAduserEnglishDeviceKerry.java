@@ -192,10 +192,11 @@ public class ACAduserEnglishDeviceKerry {
     public boolean openBluetoothComDevice(String Mac_address) {
         this.mAdapter = BluetoothAdapter.getDefaultAdapter();
         this.mmDevice = this.mAdapter.getRemoteDevice(Mac_address);
-        this.mAdapter.cancelDiscovery();
+        boolean result = this.mAdapter.cancelDiscovery();
         try {
             this.mmSocket = this.mmDevice.createRfcommSocketToServiceRecord(MY_UUID);
         } catch (IOException e) {
+            e.printStackTrace();
         }
         try {
             this.mmSocket.connect();
