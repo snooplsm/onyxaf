@@ -63,6 +63,12 @@ class SettingsViewModule(val bt: BluetoothManager) : ViewModel() {
         } else {
             flashData.postValue(data)
         }
+        bt.writeCompleted.observeOn(Schedulers.io())
+            .subscribeOn(Schedulers.io())
+            .subscribe {
+                data = null
+                needToReadFlashData.postValue(Consumable(true))
+            }
 //        controllerSettings.postValue(controllerSettingsList.map {
 //            ControllerSettingPres(setting = it, override = changedSettings[it.setting] ?: it.value)
 //        })

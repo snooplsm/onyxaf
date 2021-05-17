@@ -19,7 +19,7 @@ enum class Preset(@StringRes val nameRes: Int, @DrawableRes val icon:Int, val pr
             ),
             PresetItem(
                 ControllerSettingName.SPEED_MODE_THREE,
-                value = 1000
+                value = 100
             ),
             PresetItem(
                 ControllerSettingName.CURRENT_PERCENT,

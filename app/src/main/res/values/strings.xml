@@ -31,7 +31,7 @@
   <string name="controller_setting_252">Torque Speed KI</string>
   <string name="controller_setting_254">Speed ERR Limit</string>
   <string name="review">REVIEW</string>
-  <string name="write_to_controller">WRITE TO CONTROLLER</string>
+  <string name="write_to_controller">SLIDE TO WRITE</string>
   <string name="setting">Changed Settings</string>
   <string name="previous">Previous</string>
   <string name="new_value">New Value</string>

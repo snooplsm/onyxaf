@@ -6,8 +6,15 @@ import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.SeekBar
 import androidx.constraintlayout.widget.ConstraintLayout
+import com.google.android.material.slider.LabelFormatter
+import com.google.android.material.slider.Slider
 import us.wmwm.onyx.ControllerSettingPres
 import us.wmwm.onyx.databinding.FormSliderBinding
+import us.wmwm.onyx.gone
+import us.wmwm.onyx.visible
+import java.lang.Float.max
+import java.lang.Float.min
+import java.text.NumberFormat
 
 @SuppressLint("ResourceType")
 class FormSlider(context: Context, attrs: AttributeSet? = null) : ConstraintLayout(context, attrs) {
@@ -31,38 +38,65 @@ class FormSlider(context: Context, attrs: AttributeSet? = null) : ConstraintLayo
     init {
         clipChildren = false
         clipToPadding = false
+        b.seek.setLabelFormatter { value: Float ->
+            val format = NumberFormat.getInstance()
+            format.maximumFractionDigits = 0
+            format.format(value.toDouble())
+        }
+        b.seek.labelBehavior = LabelFormatter.LABEL_FLOATING
     }
+
+    var listener:Slider.OnSliderTouchListener?=null
 
     fun bind(pres: ControllerSettingPres) {
         val option = pres.setting
         b.seek.apply {
-            min = option.setting.range.first
-            max = option.setting.range.last
-            progress = option.value
+            valueFrom = option.setting.range.first.toFloat()
+            valueTo = option.setting.range.last.toFloat()
+            value = option.value.toFloat()
+        }
+        if((option.setting.range.last-option.setting.range.first) > 300) {
+            b.plus.visible()
+            b.minus.visible()
+        } else {
+            b.plus.gone()
+            b.minus.gone()
         }
         b.value.setOnClickListener {
-            b.seek.progress = option.value
+            b.seek.value = option.value.toFloat()
             b.value.text = ""
             onSettingChanged(option,option.value)
         }
-        b.seek.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(p: SeekBar, p1: Int, p2: Boolean) {
-
+        b.plus.setOnClickListener {
+            b.seek.value = min(option.setting.range.last.toFloat(),b.seek.value + b.seek.stepSize)
+        }
+        b.minus.setOnClickListener {
+            b.seek.value = max(0f,b.seek.value - b.seek.stepSize)
+        }
+        listener?.let { b.seek.removeOnSliderTouchListener(it) }
+        b.seek.addOnChangeListener { slider, value, fromUser ->
+            onSettingChanged(option, value.toInt())
+            val text = when(option.value!=slider.value.toInt()) {
+                true-> "[${slider.value.toInt()}]"
+                else-> ""
+            }
+            b.value.text = text
+        }
+        b.seek.addOnSliderTouchListener(object : Slider.OnSliderTouchListener {
+            override fun onStartTrackingTouch(slider: Slider) {
+                // Responds to when slider's touch event is being started
             }
 
-            override fun onStartTrackingTouch(p: SeekBar) {
-
-            }
-
-            override fun onStopTrackingTouch(p: SeekBar) {
-                onSettingChanged(option,p.progress)
-                val text = when(option.value!=p.progress) {
-                    true-> "[${p.progress}]"
+            override fun onStopTrackingTouch(slider: Slider) {
+                onSettingChanged(option,slider.value.toInt())
+                val text = when(option.value!=slider.value.toInt()) {
+                    true-> "[${slider.value.toInt()}]"
                     else-> ""
                 }
                 b.value.text = text
             }
-
+        }.apply {
+            listener = this
         })
         if(pres.override!=pres.setting.value) {
             b.value.text = "[${pres.override}]"
@@ -76,7 +110,7 @@ data class ControllerSetting(
     val value: Int
 )
 
-enum class ControllerSettingName(val code: Int, val range: IntRange) {
+enum class ControllerSettingName(val code: Int, val range: IntRange, val inverse:Boolean=false) {
     SPEED_MODE_ONE(
         113,
         0..255
@@ -107,7 +141,8 @@ enum class ControllerSettingName(val code: Int, val range: IntRange) {
     ),
     ACCEL_TIME(
         code = 239,
-        range = 1..25
+        range = 1..25,
+        inverse = true
     ),
     TORQUE_SPEED_KPS(
         code = 250,

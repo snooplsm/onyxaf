@@ -19,6 +19,7 @@ import androidx.recyclerview.widget.ListAdapter
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import com.ncorti.slidetoact.SlideToActView
 import org.koin.android.viewmodel.ext.android.sharedViewModel
 import us.wmwm.onyx.databinding.FragmentReviewSettingsBottomSheetBinding
 import us.wmwm.onyx.databinding.ReviewSettingBinding
@@ -39,7 +40,7 @@ class ReviewSettingsBottomSheetDialogFragment : BottomSheetDialogFragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         _b = FragmentReviewSettingsBottomSheetBinding.inflate(inflater, container, false)
         return b.root
     }
@@ -77,10 +78,18 @@ class ReviewSettingsBottomSheetDialogFragment : BottomSheetDialogFragment() {
             adapter.submitList(it)
         })
 
-        b.write.setOnClickListener {
-            it.isEnabled = false
-            isCancelable = false
-            vm.onWriteClicked()
+        vm.dismiss.observe(viewLifecycleOwner, Observer {
+            it.consume()?:return@Observer
+            dismiss()
+        })
+
+        b.write.onSlideCompleteListener = object : SlideToActView.OnSlideCompleteListener {
+            override fun onSlideComplete(view: SlideToActView) {
+                view.isEnabled = false
+                isCancelable = false
+                vm.onWriteClicked()
+            }
+
         }
     }
 

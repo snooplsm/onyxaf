@@ -92,6 +92,7 @@
     android:layout_marginTop="20dp"
     android:gravity="center"
     android:minHeight="50dp"
+    android:foreground="?selectableItemBackgroundBorderless"
     android:background="@drawable/button_background"
     android:text="@string/connect_bike"
     app:layout_constraintEnd_toEndOf="parent"

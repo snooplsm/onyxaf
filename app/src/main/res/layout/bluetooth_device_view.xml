@@ -59,4 +59,15 @@
         android:text=" "
         app:layout_constraintStart_toEndOf="@id/device"
         app:layout_constraintTop_toTopOf="@id/device" />
+
+
+  <View
+    android:layout_width="0dp"
+    android:layout_height="0dp"
+    android:foreground="?selectableItemBackgroundBorderless"
+    app:layout_constraintTop_toTopOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    android:duplicateParentState="true"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintBottom_toBottomOf="parent"/>
 </merge>

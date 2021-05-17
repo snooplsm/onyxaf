@@ -15,6 +15,8 @@ class ReviewSettingsBottomSheetViewModel(val bt:BluetoothManager): ViewModel() {
 
     var changes:List<ControllerSettingChange> = emptyList()
 
+    var dismiss = MutableLiveData<Consumable<Boolean>>()
+
     fun init(changes:List<ControllerSettingChange>) {
         this.changes = changes
         val data = listOf(
@@ -28,6 +30,15 @@ class ReviewSettingsBottomSheetViewModel(val bt:BluetoothManager): ViewModel() {
             listOf(ReviewPres(type=ReviewType.REVIEW_SPOOF))
         ).flatten()
         this.data.postValue(data)
+
+        bt.writeCompleted
+            .observeOn(Schedulers.io())
+            .subscribeOn(Schedulers.io())
+            .subscribe {
+                if(it) {
+                    dismiss.postValue(Consumable(true))
+                }
+            }
     }
 
     fun onViewCreated() {

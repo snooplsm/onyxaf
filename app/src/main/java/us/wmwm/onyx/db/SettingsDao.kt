@@ -11,7 +11,9 @@ abstract class SettingsDao {
 
     @Transaction
     open fun settings(): OnyxSettings {
-        return find() ?: OnyxSettings()
+        return find() ?: OnyxSettings().apply {
+            save(this)
+        }
     }
 
     @Insert(onConflict = SQLiteDatabase.CONFLICT_REPLACE)

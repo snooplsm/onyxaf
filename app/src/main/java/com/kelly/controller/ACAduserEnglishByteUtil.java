@@ -101,7 +101,7 @@ public class ACAduserEnglishByteUtil {
         return sb.toString();
     }
 
-    public static int printStringArrayInt(int[] info, int offset, int pro, int pos, String sw, String result) {
+    public static int printStringArrayInt(int[] info, /*0*/ int offset, /*1*/int pro, /*2*/int pos, /*3*/String sw, String result) {
         int i;
         if (sw == null || !sw.equals("uo")) {
             if (sw == null || !sw.equals("h")) {

@@ -33,8 +33,9 @@ class BluetoothManager(val adapter: BluetoothAdapter) {
 
     private val _data = BehaviorSubject.create<FlashData>()
 
-
     private val _monitor = BehaviorSubject.create<MonitorData>()
+
+    private val _writeCompleted = BehaviorSubject.create<Boolean>()
 
     private var readerDis: Disposable? = null
 
@@ -51,6 +52,7 @@ class BluetoothManager(val adapter: BluetoothAdapter) {
 
     val data: Observable<FlashData> = _data
     val monitor:Observable<MonitorData> = _monitor
+    val writeCompleted:Observable<Boolean> = _writeCompleted
 
     val isConnected: Boolean
         get() {
@@ -288,10 +290,18 @@ class BluetoothManager(val adapter: BluetoothAdapter) {
 
     fun writeDataToKelly(value: List<ControllerSettingChange>) {
         val newFLash = this.DataValue.copyOf()
+        val data = _data.value
+        println(newFLash)
         value.forEach {
-            newFLash[it.from.setting.code] = it.to.value
+            val row = data.version.ids[it.to.setting.code]!!
+            val value = it.to.value.toString()
+            if(ACAduserEnglishByteUtil.printStringArrayInt(newFLash, row[0].toInt(), row[1].toInt(),row[2].toInt(), row[3], value)==0) {
+                throw java.lang.RuntimeException()
+            }
         }
-        sendDataToKelly(newFLash)
+        println(newFLash)
+        _writeCompleted.onNext(true)
+        //sendDataToKelly(newFLash)
     }
 
     private fun sendDataToKelly(data:IntArray) {
@@ -654,8 +664,6 @@ object FlashParser : (IntArray) -> FlashData {
             flashVersion.calibrationArray[it][0].toInt() to flashVersion.calibrationArray[it]
         }.toMap()
 
-
-
         val voltage = listOfNotNull(ids[25],ids[27])
                 .first().run {
                     val voltstr = ACAduserEnglishByteUtil.printIntArrayString(p1, 3, 2, 1, "a")
@@ -670,14 +678,18 @@ object FlashParser : (IntArray) -> FlashData {
             percent
         }
         val settings = Preset.ONYX.presetData.map {
+            val row = ids[it.setting.code]!!
+            val data = ACAduserEnglishByteUtil.printIntArrayString(p1, row[0].toInt(),row[1].toInt(),row[2].toInt(),row[3])
             ControllerSetting(
                 setting = it.setting,
-                value = p1[it.setting.code]
+                value = data.toInt()
             )
         }
         val data = FlashData(
                 controllerName = Temp_asc,
-                version = flashVersion,
+                version = flashVersion.copy(
+                    ids = ids
+                ),
                 softwareVersion2 = Soft_Version2,
                 name = Name,
                 newName = NewName,
@@ -720,7 +732,8 @@ data class FlashData(
 data class FlashVersion(
         val softwareVersion: SoftwareVersion,
         val identifyShowEn: Boolean,
-        val calibrationArray: Array<Array<String>>
+        val calibrationArray: Array<Array<String>>,
+        val ids:Map<Int, Array<String>> = emptyMap()
 )
 
 enum class SoftwareVersion {

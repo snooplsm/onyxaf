@@ -74,6 +74,8 @@ class SettingsFragment : Fragment() {
             b.recyclerView.gone()
             b.tryAPreset.gone()
             b.readData.visible()
+            b.readFromController.isEnabled = true
+            b.review.gone()
         })
         vm.flashData.observe(viewLifecycleOwner, {
             b.recyclerView.visible()

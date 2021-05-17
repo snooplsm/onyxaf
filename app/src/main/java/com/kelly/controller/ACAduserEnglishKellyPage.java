@@ -1717,10 +1717,16 @@ public class ACAduserEnglishKellyPage extends Activity {
 
                     public void run() {
                         if (ACAduserEnglishKellyPage.this.deviceKelly.openBluetoothComDevice(ACAduserEnglishKellyPage.this.Mac_address)) {
+
                             ACAduserEnglishKellyPage.this.deviceKelly.ETS_TX_CMD = ACAduserEnglishKellyPage.ETS_CODE_VERSION;
                             ACAduserEnglishKellyPage.this.deviceKelly.ETS_TX_BYTES = (byte) 0;
                             System.out.println("VersionRequest");
                             ACAduserEnglishKellyPage.this.deviceKelly.sendcmd();
+                            try {
+                                Thread.sleep(200);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
                             if (ACAduserEnglishKellyPage.this.deviceKelly.readcmd() != 1) {
                                 ACAduserEnglishKellyPage.this.ComStatus.setTextColor(-16744448);
                                 ACAduserEnglishKellyPage.this.ComStatus.setText("Connect failed!");

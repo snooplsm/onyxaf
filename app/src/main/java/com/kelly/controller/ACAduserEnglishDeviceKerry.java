@@ -90,7 +90,7 @@ public class ACAduserEnglishDeviceKerry {
                             ACAduserEnglishDeviceKerry.this.ETS_Rx_Status = true;
                             ACAduserEnglishDeviceKerry.this.readIndex = 0;
                         }
-                    } catch (IOException e) {
+                    } catch (Exception e) {
                     }
                 }
             }
