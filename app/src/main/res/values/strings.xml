@@ -38,6 +38,7 @@
   <string name="below_is_a_list_of_bikes_near_you">Bikes near you:</string>
   <string name="locating_bikes_make_sure_the_bike_is_on">Locating bikes. Make sure the bike is on!</string>
   <string name="have_no_clue_what_to_change_try_a_preset_to_get_the_ball_rolling">Have no clue what to change? Try a |preset| to get the hub motor spinning.</string>
+  <string name="preset_or_previous_configuration">Load a |preset| or |previous configuration|.</string>
   <string name="preset">preset</string>
   <string name="preset_john_angel">John Angel - Sicko Mode</string>
   <string name="preset_onyx">Onyx - Stock</string>
@@ -47,4 +48,6 @@
   <string name="cd_motor_stay">Buy some motor stays</string>
   <string name="however_some_people_want_to_part_with_money_to_show_support_so_if_you_send_25_to_ryan_gravener_on_venmo_with_a_comment_of_your_address_i_ll_mail_you_some_motor_stays">However, some people want to part with money to show support. So if you send $25 to |@Ryan-Gravener| on venmo, and a comment of your address I\'ll mail you some motor stays.</string>
   <string name="this_app_is_free_because_everything_that_is_great_in_life_is">This app is free. Because everything that is great in life is.</string>
+  <string name="turn_the_bike_off_for_5_seconds_and_turn_it_back_on_you_are_now_all_done">Turn the bike off for 5+ seconds and turn it back on. You are now all done.</string>
+  <string name="previous_configuration">previous configuration</string>
 </resources>

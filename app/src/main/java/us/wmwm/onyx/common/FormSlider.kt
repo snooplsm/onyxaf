@@ -4,11 +4,10 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
-import android.widget.SeekBar
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.google.android.material.slider.LabelFormatter
 import com.google.android.material.slider.Slider
-import us.wmwm.onyx.ControllerSettingPres
+import us.wmwm.onyx.settings.ControllerSettingPres
 import us.wmwm.onyx.databinding.FormSliderBinding
 import us.wmwm.onyx.gone
 import us.wmwm.onyx.visible

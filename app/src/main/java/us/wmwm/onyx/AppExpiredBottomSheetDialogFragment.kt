@@ -18,6 +18,7 @@ import androidx.lifecycle.ViewModel
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.schedulers.Schedulers
+import org.koin.android.ext.android.inject
 import org.koin.android.viewmodel.ext.android.sharedViewModel
 import org.koin.core.context.GlobalContext
 import us.wmwm.onyx.databinding.FragmentAppExpiredBottomSheetBinding
@@ -28,6 +29,12 @@ class AppExpiredBottomSheetDialogFragment : BottomSheetDialogFragment() {
     var _b: FragmentAppExpiredBottomSheetBinding?=null
 
     val b: FragmentAppExpiredBottomSheetBinding get() = _b!!
+
+    val t:OnyxTracker by inject()
+
+    init {
+        t.screen(this.javaClass)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -45,6 +52,7 @@ class AppExpiredBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        val t:OnyxTracker by inject()
         b.dismiss.setOnClickListener {
             dismiss()
         }

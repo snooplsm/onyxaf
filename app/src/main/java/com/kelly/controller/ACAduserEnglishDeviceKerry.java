@@ -86,11 +86,18 @@ public class ACAduserEnglishDeviceKerry {
                         if (ACAduserEnglishDeviceKerry.this.readInfo[1] > (byte) 16) {
                             ACAduserEnglishDeviceKerry.this.readInfo[1] = (byte) 16;
                         }
-                        if (ACAduserEnglishDeviceKerry.this.readIndex >= ACAduserEnglishDeviceKerry.this.readInfo[1] + 3 && ACAduserEnglishDeviceKerry.calculateCheckNumber(ACAduserEnglishDeviceKerry.this.readInfo, 0, ACAduserEnglishDeviceKerry.this.readInfo[1] + 2) == ACAduserEnglishDeviceKerry.this.readInfo[ACAduserEnglishDeviceKerry.this.readInfo[1] + 2]) {
+                        byte[] readInfo = ACAduserEnglishDeviceKerry.this.readInfo;
+                        int readIndex = ACAduserEnglishDeviceKerry.this.readIndex;
+                        int readInfo1 = readInfo[1];
+                        int readInfo1plus2 = readInfo1+2;
+                        int checkNumber = ACAduserEnglishDeviceKerry.calculateCheckNumber(readInfo, 0, readInfo1 + 2);
+                        int readInfoPlus2 = ACAduserEnglishDeviceKerry.this.readInfo[readInfo1plus2];
+                        if (readIndex >= readInfo1 + 3 && checkNumber == readInfoPlus2) {
                             ACAduserEnglishDeviceKerry.this.ETS_Rx_Status = true;
                             ACAduserEnglishDeviceKerry.this.readIndex = 0;
                         }
                     } catch (Exception e) {
+                        e.printStackTrace();
                     }
                 }
             }
@@ -361,7 +368,7 @@ public class ACAduserEnglishDeviceKerry {
 
         public void run() {
             int Error_count = 0;
-            while (true) {
+            while (!paused) {
                 try {
                     if (!paused) {
                         int i;
@@ -437,14 +444,10 @@ public class ACAduserEnglishDeviceKerry {
                             }
                         }
                         m.onMonitor(monitorMap);
-                        if(paused) {
-                            Thread.sleep(1000);
-                        } else {
                             Thread.sleep(100);
-                        }
                     } else {
                         running = false;
-                        Thread.sleep(1000);
+                        Thread.sleep(100);
                     }
                 } catch (Exception e2) {
                     e2.printStackTrace();

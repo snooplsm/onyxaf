@@ -5,8 +5,8 @@ import androidx.room.PrimaryKey
 
 @Entity
 data class OnyxSettings(
-    @PrimaryKey
-    val id:Int = 1,
+    @PrimaryKey(autoGenerate = true)
+    val id:Int = 0,
     val temp: Temp = Temp.FAHRENHEIT
 ) {
     fun temp(temperature: Int): Int {

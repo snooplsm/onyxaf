@@ -11,10 +11,12 @@ import io.reactivex.rxjava3.core.SingleOnSubscribe
 import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.schedulers.Schedulers
 import io.reactivex.rxjava3.subjects.BehaviorSubject
-import us.wmwm.onyx.ControllerSettingChange
-import us.wmwm.onyx.Preset
+import io.reactivex.rxjava3.subjects.PublishSubject
 import us.wmwm.onyx.common.ControllerSetting
 import us.wmwm.onyx.db.BluetoothDvc
+import us.wmwm.onyx.domain.*
+import us.wmwm.onyx.preset.Preset
+import us.wmwm.onyx.settings.ControllerSettingChange
 import java.io.InputStream
 import java.io.OutputStream
 import java.util.*
@@ -35,13 +37,15 @@ class BluetoothManager(val adapter: BluetoothAdapter) {
 
     private val _monitor = BehaviorSubject.create<MonitorData>()
 
-    private val _writeCompleted = BehaviorSubject.create<Boolean>()
+    private val _percentage = PublishSubject.create<Int>()
+
+    private val _writeCompleted = BehaviorSubject.create<Pair<Boolean, IntArray>>()
 
     private var readerDis: Disposable? = null
 
     private val deviceKelly = ACAduserEnglishDeviceKerry.getInstance()
 
-    lateinit var monitorThread: ACAduserEnglishDeviceKerry.MonitorThreader
+    var monitorThread: ACAduserEnglishDeviceKerry.MonitorThreader? = null
 
     val DataValue = IntArray(512)
 
@@ -50,23 +54,25 @@ class BluetoothManager(val adapter: BluetoothAdapter) {
             return _connected
         }
 
+    val percentage:Observable<Int> = _percentage
+
     val data: Observable<FlashData> = _data
-    val monitor:Observable<MonitorData> = _monitor
-    val writeCompleted:Observable<Boolean> = _writeCompleted
+    val monitor: Observable<MonitorData> = _monitor
+    val writeCompleted: Observable<Pair<Boolean, IntArray>> = _writeCompleted
 
     val isConnected: Boolean
         get() {
             return socket?.isConnected == true
         }
 
-    fun connect(device:BluetoothDvc) {
+    fun connect(device: BluetoothDvc) {
         this.device = adapter.getRemoteDevice(device.device)
         connect(this.device!!)
     }
 
     fun connect(device: BluetoothDevice) {
         this.device = device
-        if(device.name=="UNKNOWN" || device.name==null) {
+        if (device.name == "UNKNOWN" || device.name == null) {
             return
         }
         val bonded = adapter.bondedDevices
@@ -98,16 +104,16 @@ class BluetoothManager(val adapter: BluetoothAdapter) {
 
     fun sendCommand(command: Command) {
         Single.create(SendCommandOnSubscribe(command, input ?: return, output ?: return, this))
-                .observeOn(Schedulers.io())
-                .subscribeOn(Schedulers.io())
-                .filter {
-                    isConnected
-                }
-                .subscribe({
-                    //read
-                }, {
-                    it.printStackTrace()
-                })
+            .observeOn(Schedulers.io())
+            .subscribeOn(Schedulers.io())
+            .filter {
+                isConnected
+            }
+            .subscribe({
+                //read
+            }, {
+                it.printStackTrace()
+            })
     }
 
     fun onDisconnect(dev: BluetoothDevice) {
@@ -123,7 +129,6 @@ class BluetoothManager(val adapter: BluetoothAdapter) {
 //        if (this.DEBUG) {
 //            this.deviceKelly.resetLogBuffer()
 //        }
-        startReadThread()
         if (true) {
             if (isConnected) {
                 var j: Int
@@ -208,38 +213,8 @@ class BluetoothManager(val adapter: BluetoothAdapter) {
         return DataValue
     }
 
-    var readThreadSub:Disposable?=null
-
     fun startReadThread() {
-        if(readThreadSub?.isDisposed==false) {
-            return
-        }
-//        monitorThread.pause()
-        var delay = 0L;
-//        if(monitorThread.isRunning) {
-//            delay = 1000;
-//        }
-        readThreadSub = Single.just(1)
-                .delay(delay,TimeUnit.MILLISECONDS)
-                .subscribeOn(Schedulers.io())
-                .observeOn(Schedulers.io())
-                .retryWhen { errors->
-                    errors.takeWhile {
-                        it is ThreadPausedError
-                    }
-                }
-                .map {
-//                    if(monitorThread.isRunning) {
-//                        throw ThreadPausedError()
-//                    }
-                    it
-                }
-                .subscribe { t1, t2 ->
-                    t1?.let {
-                        deviceKelly.readThread()
-                    }
-                }
-
+        deviceKelly.readThread()
     }
 
     fun startMonitorThread() {
@@ -256,21 +231,21 @@ class BluetoothManager(val adapter: BluetoothAdapter) {
         val motor = monitorMap[10]!!
         val controller = monitorMap[11]!!
         val data = MonitorData(
-                voltage = volt,
-                controllerTemp = controller,
-                motorTemp = motor
+            voltage = volt,
+            controllerTemp = controller,
+            motorTemp = motor
         )
         _monitor.onNext(data)
     }
 
     fun pausePulse() {
-        if(!this::monitorThread.isInitialized) return
-        monitorThread.pause()
+        monitorThread?.let {
+            it.pause()
+        }
     }
 
     fun resumePulse() {
-        if(!this::monitorThread.isInitialized) return
-        monitorThread.resumed()
+        startMonitorThread()
     }
 
     fun onOpen() {
@@ -283,7 +258,12 @@ class BluetoothManager(val adapter: BluetoothAdapter) {
         input?.close()
         output?.close()
         device?.let {
-            _connected.onNext(Pair(it,socket?.isConnected?.btConnection?:BluetoothConnection.DISCONNECTED))
+            _connected.onNext(
+                Pair(
+                    it,
+                    socket?.isConnected?.btConnection ?: BluetoothConnection.DISCONNECTED
+                )
+            )
         }
 
     }
@@ -295,140 +275,172 @@ class BluetoothManager(val adapter: BluetoothAdapter) {
         value.forEach {
             val row = data.version.ids[it.to.setting.code]!!
             val value = it.to.value.toString()
-            if(ACAduserEnglishByteUtil.printStringArrayInt(newFLash, row[0].toInt(), row[1].toInt(),row[2].toInt(), row[3], value)==0) {
+            if (ACAduserEnglishByteUtil.printStringArrayInt(
+                    newFLash,
+                    row[0].toInt(),
+                    row[1].toInt(),
+                    row[2].toInt(),
+                    row[3],
+                    value
+                ) == 0
+            ) {
                 throw java.lang.RuntimeException()
+            }
+            val k = ACAduserEnglishByteUtil.printIntArrayString(
+                newFLash,
+                row[0].toInt(),
+                row[1].toInt(),
+                row[2].toInt(),
+                row[3]
+            )
+            if (k != value) {
+                throw java.lang.RuntimeException("we failed")
             }
         }
         println(newFLash)
-        _writeCompleted.onNext(true)
-        //sendDataToKelly(newFLash)
+        Single.just(1)
+            .subscribeOn(Schedulers.io())
+            .observeOn(Schedulers.io())
+            .subscribe { t1, t2 ->
+                try {
+                    sendDataToKelly(newFLash)
+                    _writeCompleted.onNext(true to newFLash)
+                } catch (e: java.lang.Exception) {
+                    e.printStackTrace()
+                }
+            }
+
     }
 
-    private fun sendDataToKelly(data:IntArray) {
+    private fun sendDataToKelly(data: IntArray) {
         var j: Int
         var i: Int
         var Write_ok = 1
         var temp_return = 0
 
-            if (isConnected) {
-                try {
-                    deviceKelly.ETS_TX_CMD = (-15).toByte()
-                    deviceKelly.ETS_TX_BYTES = 0.toByte()
-                    j = 0
-                    loop0@ while (j < 2) {
+        if (isConnected) {
+            try {
+                deviceKelly.ETS_TX_CMD = (-15).toByte()
+                deviceKelly.ETS_TX_BYTES = 0.toByte()
+                j = 0
+                loop0@ while (j < 2) {
+                    deviceKelly.sendcmd()
+                    i = 0
+                    while (i < 5) {
+                        temp_return = deviceKelly.readcmd()
+                        if (temp_return == 1) {
+                            break@loop0
+                        }
+                        i++
+                    }
+                    j++
+                }
+                _percentage.onNext(1)
+                if (temp_return != 1) {
+                    throw RuntimeException("Open Flash Failed!")
+                }
+            } catch (e: java.lang.Exception) {
+                throw RuntimeException("Open Flash Internal Error!")
+            }
+        } else {
+            throw RuntimeException("Device is not opened!Please open device first!")
+        }
+
+
+        i = 0
+        while (i < 40) {
+            println("$i < 40")
+            _percentage.onNext(1+i)
+            if (i < 39) {
+                deviceKelly.ETS_TX_CMD = (-13).toByte()
+                deviceKelly.ETS_TX_BYTES = 16.toByte()
+                deviceKelly.ETS_TX_DATA[0] = (i * 13).toByte()
+                deviceKelly.ETS_TX_DATA[1] = 13.toByte()
+                deviceKelly.ETS_TX_DATA[2] = (i * 13 shr 8).toByte()
+                j = 0
+                while (j < 13) {
+                    println("$i $j < 13")
+                    deviceKelly.ETS_TX_DATA[j + 3] =
+                        data[i * 13 + j].toByte()
+                    j++
+                }
+                j = 0
+                while (j < 3) {
+                    println("$i < 40 && $j < 3")
+                    try {
                         deviceKelly.sendcmd()
-                        i = 0
-                        while (i < 5) {
+                        while (0 < 10) {
                             temp_return = deviceKelly.readcmd()
                             if (temp_return == 1) {
-                                break@loop0
+                                break
+                            }
+                            i++
+                        }
+                        j++
+                    } catch (e2: java.lang.Exception) {
+                        throw RuntimeException("Write Error!")
+                    }
+                }
+                if (temp_return != 1) {
+                    Write_ok = 0
+                }
+            } else if (i == 39) {
+                try {
+                    deviceKelly.ETS_TX_CMD = (-13).toByte()
+                    deviceKelly.ETS_TX_BYTES = 8.toByte()
+                    deviceKelly.ETS_TX_DATA[0] = (-5).toByte()
+                    deviceKelly.ETS_TX_DATA[1] = 5.toByte()
+                    deviceKelly.ETS_TX_DATA[2] = 1.toByte()
+                    j = 507
+                    while (j < 512) {
+                        println("$i == 39 $j < 512")
+                        deviceKelly.ETS_TX_DATA[j - 507 + 3] =
+                            data[j].toByte()
+                        j++
+                    }
+                    j = 0
+                    while (j < 3) {
+                        println("$i == 39 $j<3")
+                        deviceKelly.sendcmd()
+                        while (0 < 10) {
+                            println("$i == 39 && $j<3 && 0 < 10")
+                            temp_return = deviceKelly.readcmd()
+                            if (temp_return == 1) {
+                                break
                             }
                             i++
                         }
                         j++
                     }
                     if (temp_return != 1) {
-                        throw RuntimeException("Open Flash Failed!")
-                        return
+                        Write_ok = 0
                     }
-                } catch (e: java.lang.Exception) {
-                    throw RuntimeException("Open Flash Internal Error!")
+                } catch (e3: java.lang.Exception) {
+                    throw RuntimeException("Write Error!")
                 }
-            } else {
-                throw RuntimeException("Device is not opened!Please open device first!")
-                return
             }
-
-
-                i = 0
-                while (i < 40) {
-                    if (i < 39) {
-                        deviceKelly.ETS_TX_CMD = (-13).toByte()
-                        deviceKelly.ETS_TX_BYTES = 16.toByte()
-                        deviceKelly.ETS_TX_DATA[0] = (i * 13).toByte()
-                        deviceKelly.ETS_TX_DATA[1] = 13.toByte()
-                        deviceKelly.ETS_TX_DATA[2] = (i * 13 shr 8).toByte()
-                        j = 0
-                        while (j < 13) {
-                            deviceKelly.ETS_TX_DATA[j + 3] =
-                                data[i * 13 + j].toByte()
-                            j++
-                        }
-                        j = 0
-                        while (j < 3) {
-                            try {
-                                deviceKelly.sendcmd()
-                                while (0 < 10) {
-                                    temp_return = deviceKelly.readcmd()
-                                    if (temp_return == 1) {
-                                        break
-                                    }
-                                    i++
-                                }
-                                j++
-                            } catch (e2: java.lang.Exception) {
-                                throw RuntimeException("Write Error!")
-                            }
-                        }
-                        if (temp_return != 1) {
-                            Write_ok = 0
-                        }
-                    } else if (i == 39) {
-                        try {
-                            deviceKelly.ETS_TX_CMD = (-13).toByte()
-                            deviceKelly.ETS_TX_BYTES = 8.toByte()
-                            deviceKelly.ETS_TX_DATA[0] = (-5).toByte()
-                            deviceKelly.ETS_TX_DATA[1] = 5.toByte()
-                            deviceKelly.ETS_TX_DATA[2] = 1.toByte()
-                            j = 507
-                            while (j < 512) {
-                                deviceKelly.ETS_TX_DATA[j - 507 + 3] =
-                                    data[j].toByte()
-                                j++
-                            }
-                            j = 0
-                            while (j < 3) {
-                                deviceKelly.sendcmd()
-                                while (0 < 10) {
-                                    temp_return = deviceKelly.readcmd()
-                                    if (temp_return == 1) {
-                                        break
-                                    }
-                                    i++
-                                }
-                                j++
-                            }
-                            if (temp_return != 1) {
-                                Write_ok = 0
-                            }
-                        } catch (e3: java.lang.Exception) {
-                            throw RuntimeException("Write Error!")
-                        }
-                    }
-                    i++
-                }
-                deviceKelly.ETS_TX_CMD = (-12).toByte()
-                deviceKelly.ETS_TX_BYTES = 0.toByte()
-                deviceKelly.sendcmd()
-                i = 0
-                while (i < 30) {
-                    temp_return = deviceKelly.readcmd()
-                    if (temp_return == 1) {
-                        break
-                    }
-                    i++
-                }
-                if (temp_return != 1) {
-                    throw RuntimeException("Write To Flash Error!")
-                    deviceKelly.closeUsbComDevice()
-                    return
-                } else if (Write_ok == 0) {
-                    throw RuntimeException("Write Data Error!")
-                    return
-                }
-
+            i++
+        }
+        deviceKelly.ETS_TX_CMD = (-12).toByte()
+        deviceKelly.ETS_TX_BYTES = 0.toByte()
+        deviceKelly.sendcmd()
+        i = 0
+        while (i < 30) {
+            _percentage.onNext(70+i)
+            println("$i < 30")
+            temp_return = deviceKelly.readcmd()
+            if (temp_return == 1) {
+                break
+            }
+            i++
+        }
+        if (temp_return != 1) {
+            deviceKelly.closeUsbComDevice()
+            throw RuntimeException("Write To Flash Error!")
+        } else if (Write_ok == 0) {
+            throw RuntimeException("Write Data Error!")
+        }
         println("Data Write Completely!")
-
     }
 }
 
@@ -437,14 +449,20 @@ enum class Command {
     READ_FLASH
 }
 
-class SendCommandOnSubscribe(val command: Command, input: InputStream, output: OutputStream, val bt: BluetoothManager) : SingleOnSubscribe<IntArray> {
+class SendCommandOnSubscribe(
+    val command: Command,
+    input: InputStream,
+    output: OutputStream,
+    val bt: BluetoothManager
+) : SingleOnSubscribe<IntArray> {
 
     val input = LoggableInputStream(input)
     val output = LoggableOutputStream(output)
 
 
     object def {
-        val commandToLambda = mutableMapOf(Command.OPEN to OpenCommandReader, Command.READ_FLASH to FlashReadCommand)
+        val commandToLambda =
+            mutableMapOf(Command.OPEN to OpenCommandReader, Command.READ_FLASH to FlashReadCommand)
         //val commandToParser = mutableMapOf(Command.READ_FLASH to FlashParser)
     }
 
@@ -581,44 +599,44 @@ object FlashParser : (IntArray) -> FlashData {
                 when {
                     Soft_Version2 >= 265 -> {
                         FlashVersion(
-                                softwareVersion = SoftwareVersion.TWO,
-                                identifyShowEn = false,
-                                calibrationArray = ACAduserEnglishSetting.Calibration_Value_Array_KBLS0109
+                            softwareVersion = SoftwareVersion.TWO,
+                            identifyShowEn = false,
+                            calibrationArray = ACAduserEnglishSetting.Calibration_Value_Array_KBLS0109
                         )
                     }
                     Soft_Version2 >= 262 -> {
                         FlashVersion(
-                                softwareVersion = SoftwareVersion.TWO,
-                                identifyShowEn = false,
-                                calibrationArray = ACAduserEnglishSetting.Calibration_Value_Array_KBLS0106
+                            softwareVersion = SoftwareVersion.TWO,
+                            identifyShowEn = false,
+                            calibrationArray = ACAduserEnglishSetting.Calibration_Value_Array_KBLS0106
                         )
                     }
                     Soft_Version2 == 261 -> {
                         FlashVersion(
-                                softwareVersion = SoftwareVersion.TWO,
-                                identifyShowEn = false,
-                                calibrationArray = ACAduserEnglishSetting.Calibration_Value_Array_KBLS0105
+                            softwareVersion = SoftwareVersion.TWO,
+                            identifyShowEn = false,
+                            calibrationArray = ACAduserEnglishSetting.Calibration_Value_Array_KBLS0105
                         )
                     }
                     Soft_Version2 == 260 -> {
                         FlashVersion(
-                                softwareVersion = SoftwareVersion.TWO,
-                                identifyShowEn = false,
-                                calibrationArray = ACAduserEnglishSetting.Calibration_Value_Array_KBLS0104
+                            softwareVersion = SoftwareVersion.TWO,
+                            identifyShowEn = false,
+                            calibrationArray = ACAduserEnglishSetting.Calibration_Value_Array_KBLS0104
                         )
                     }
                     Soft_Version2 >= 258 -> {
                         FlashVersion(
-                                softwareVersion = SoftwareVersion.TWO,
-                                identifyShowEn = true,
-                                calibrationArray = ACAduserEnglishSetting.Calibration_Value_Array_KBLS0102
+                            softwareVersion = SoftwareVersion.TWO,
+                            identifyShowEn = true,
+                            calibrationArray = ACAduserEnglishSetting.Calibration_Value_Array_KBLS0102
                         )
                     }
                     Soft_Version2 == 257 -> {
                         FlashVersion(
-                                softwareVersion = SoftwareVersion.TWO,
-                                identifyShowEn = true,
-                                calibrationArray = ACAduserEnglishSetting.Calibration_Value_Array_KBLS0101
+                            softwareVersion = SoftwareVersion.TWO,
+                            identifyShowEn = true,
+                            calibrationArray = ACAduserEnglishSetting.Calibration_Value_Array_KBLS0101
                         )
                     }
                     else -> throw UnsupportedOperationException("module not supported")
@@ -626,28 +644,30 @@ object FlashParser : (IntArray) -> FlashData {
             }
             (Name != "ACS") && (NewName != "PS") -> {
                 when {
-                    (Name != "ACI") && (Name == "ACS" || NewName != "AC") -> throw UnsupportedOperationException("module not supported")
+                    (Name != "ACI") && (Name == "ACS" || NewName != "AC") -> throw UnsupportedOperationException(
+                        "module not supported"
+                    )
                     else -> {
                         when {
                             Soft_Version2 >= 259 -> {
                                 FlashVersion(
-                                        softwareVersion = SoftwareVersion.ONE,
-                                        identifyShowEn = false,
-                                        calibrationArray = ACAduserEnglishSetting2.Calibration_Value_Array_KACI0103
+                                    softwareVersion = SoftwareVersion.ONE,
+                                    identifyShowEn = false,
+                                    calibrationArray = ACAduserEnglishSetting2.Calibration_Value_Array_KACI0103
                                 )
                             }
                             Soft_Version2 == 258 -> {
                                 FlashVersion(
-                                        softwareVersion = SoftwareVersion.ONE,
-                                        identifyShowEn = false,
-                                        calibrationArray = ACAduserEnglishSetting2.Calibration_Value_Array_KACI0102
+                                    softwareVersion = SoftwareVersion.ONE,
+                                    identifyShowEn = false,
+                                    calibrationArray = ACAduserEnglishSetting2.Calibration_Value_Array_KACI0102
                                 )
                             }
                             Soft_Version2 == 257 -> {
                                 FlashVersion(
-                                        softwareVersion = SoftwareVersion.ONE,
-                                        identifyShowEn = false,
-                                        calibrationArray = ACAduserEnglishSetting2.Calibration_Value_Array_KACI0101
+                                    softwareVersion = SoftwareVersion.ONE,
+                                    identifyShowEn = false,
+                                    calibrationArray = ACAduserEnglishSetting2.Calibration_Value_Array_KACI0101
                                 )
                             }
                             else -> {
@@ -664,80 +684,64 @@ object FlashParser : (IntArray) -> FlashData {
             flashVersion.calibrationArray[it][0].toInt() to flashVersion.calibrationArray[it]
         }.toMap()
 
-        val voltage = listOfNotNull(ids[25],ids[27])
-                .first().run {
-                    val voltstr = ACAduserEnglishByteUtil.printIntArrayString(p1, 3, 2, 1, "a")
-                    when(voltstr) {
-                        "80"-> return@run Voltage(min=18, max = (p1[23] * 256 + p1[24]) * 125 / 100)
-                        else-> return@run Voltage(min=ACAduserEnglishByteUtil.getVoltRange(voltstr, 0), max=ACAduserEnglishByteUtil.getVoltRange(voltstr, 1))
-                    }
+        val voltage = listOfNotNull(ids[25], ids[27])
+            .first().run {
+                val voltstr = ACAduserEnglishByteUtil.printIntArrayString(p1, 3, 2, 1, "a")
+                when (voltstr) {
+                    "80" -> return@run Voltage(min = 18, max = (p1[23] * 256 + p1[24]) * 125 / 100)
+                    else -> return@run Voltage(
+                        min = ACAduserEnglishByteUtil.getVoltRange(
+                            voltstr,
+                            0
+                        ), max = ACAduserEnglishByteUtil.getVoltRange(voltstr, 1)
+                    )
                 }
+            }
 
         val currentVolt = ids[9].run {
             val percent = p1[9]
             percent
         }
+        val serial = ids[12]!!
+        val serialNo = ACAduserEnglishByteUtil.printIntArrayString(
+            p1,
+            serial[0].toInt(),
+            serial[1].toInt(),
+            serial[2].toInt(),
+            serial[3]
+        )
         val settings = Preset.ONYX.presetData.map {
             val row = ids[it.setting.code]!!
-            val data = ACAduserEnglishByteUtil.printIntArrayString(p1, row[0].toInt(),row[1].toInt(),row[2].toInt(),row[3])
+            val data = ACAduserEnglishByteUtil.printIntArrayString(
+                p1,
+                row[0].toInt(),
+                row[1].toInt(),
+                row[2].toInt(),
+                row[3]
+            )
             ControllerSetting(
                 setting = it.setting,
                 value = data.toInt()
             )
         }
         val data = FlashData(
-                controllerName = Temp_asc,
-                version = flashVersion.copy(
-                    ids = ids
-                ),
-                softwareVersion2 = Soft_Version2,
-                name = Name,
-                newName = NewName,
-                volts = volts.toInt(),
-                voltage = voltage,
-                currentVolt = currentVolt,
-                settings = settings,
-                rawData = p1
+            controllerName = Temp_asc,
+            serialNumber = serialNo,
+            version = flashVersion.copy(
+                ids = ids
+            ),
+            softwareVersion2 = Soft_Version2,
+            name = Name,
+            newName = NewName,
+            volts = volts.toInt(),
+            voltage = voltage,
+            currentVolt = currentVolt,
+            settings = settings,
+            rawData = p1
         )
         return data
     }
 
-}
-
-data class MonitorData(
-        val motorTemp:Int,
-        val controllerTemp:Int,
-        val voltage:Int
-)
-
-data class Voltage(
-        val min: Int,
-        val max: Int,
-)
-
-data class FlashData(
-        val controllerName: String,
-        val name: String,
-        val newName: String,
-        val softwareVersion2: Int,
-        val version: FlashVersion,
-        val volts: Int,
-        val voltage:Voltage?,
-        val currentVolt:Int,
-        val date:Date = Date(),
-        val settings:List<ControllerSetting>,
-        val rawData:IntArray
-)
-
-data class FlashVersion(
-        val softwareVersion: SoftwareVersion,
-        val identifyShowEn: Boolean,
-        val calibrationArray: Array<Array<String>>,
-        val ids:Map<Int, Array<String>> = emptyMap()
-)
-
-enum class SoftwareVersion {
-    ONE, TWO
 }
 
 class ThreadPausedError : Exception()
@@ -760,10 +764,10 @@ object ETS {
 }
 
 class CommandPayload(
-        val cmd: Byte,
-        val byte: Byte,
-        val data: ByteArray = ByteArray(0),
-        val handler: (InputStream, OutputStream) -> Any
+    val cmd: Byte,
+    val byte: Byte,
+    val data: ByteArray = ByteArray(0),
+    val handler: (InputStream, OutputStream) -> Any
 )
 
 enum class BluetoothConnection {

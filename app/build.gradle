@@ -18,17 +18,25 @@ android {
     }
   }
 
+  flavorDimensions "org"
+
+  productFlavors {
+    onyxMotormed {
+      dimension "org"
+    }
+  }
+
   defaultConfig {
     applicationId "us.wmwm.onyx"
     minSdkVersion 26
     targetSdkVersion 30
-    versionCode 2
-    versionName "1.0"
+    versionCode 6
+    versionName "0.4"
 
     def minutesSinceEpoch = System.currentTimeMillis()
 
     def expire = Calendar.getInstance()
-    expire.add(Calendar.DAY_OF_YEAR, 7)
+    expire.add(Calendar.DAY_OF_YEAR, 28)
     expire.set(Calendar.DAY_OF_WEEK, Calendar.WEDNESDAY)
 
     buildConfigField("java.util.Date", "BUILD_TIME", "new java.util.Date(${minutesSinceEpoch}l)")

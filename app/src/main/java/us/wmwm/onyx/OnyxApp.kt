@@ -2,16 +2,24 @@ package us.wmwm.onyx
 
 import android.app.Application
 import android.bluetooth.BluetoothAdapter
-import android.os.StrictMode
-import android.os.StrictMode.ThreadPolicy
 import androidx.room.Room
+import com.google.firebase.FirebaseApp
+import com.google.firebase.analytics.FirebaseAnalytics
+import com.google.firebase.analytics.ktx.analytics
+import com.google.firebase.ktx.Firebase
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.android.viewmodel.dsl.viewModel
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
 import us.wmwm.onyx.bluetooth.BluetoothManager
+import us.wmwm.onyx.connect.BikeConnectDialogFragmentViewModel
+import us.wmwm.onyx.connect.BikesFoundBottomSheetDialogFragmentViewModel
+import us.wmwm.onyx.connect.ConnectFragmentViewModel
+import us.wmwm.onyx.connect.ConnectedFragmentViewModel
 import us.wmwm.onyx.db.OnyxDb
+import us.wmwm.onyx.settings.ReviewSettingsBottomSheetViewModel
+import us.wmwm.onyx.settings.SettingsViewModule
 
 
 class OnyxApp : Application() {
@@ -23,7 +31,15 @@ class OnyxApp : Application() {
         }
 
         single {
+            FirebaseAnalytics.getInstance(get<OnyxApp>())
+        }
+
+        single {
             BluetoothManager(get())
+        }
+
+        single {
+            this@OnyxApp
         }
 
         single {
@@ -31,6 +47,10 @@ class OnyxApp : Application() {
                 applicationContext,
                 OnyxDb::class.java, "onyx"
             ).build()
+        }
+
+        single {
+            OnyxTracker(get())
         }
 
         viewModel {
@@ -44,7 +64,7 @@ class OnyxApp : Application() {
             ConnectFragmentViewModel(get(),get(),get())
         }
         viewModel {
-            SettingsViewModule(get())
+            SettingsViewModule(get(),get(), get())
         }
         viewModel {
             BikesFoundBottomSheetDialogFragmentViewModel(get())
@@ -53,21 +73,17 @@ class OnyxApp : Application() {
             BikeConnectDialogFragmentViewModel(get())
         }
         viewModel {
-            ReviewSettingsBottomSheetViewModel(get())
+            ReviewSettingsBottomSheetViewModel(get(),get(), get())
         }
 
         viewModel {
             ConnectedFragmentViewModel(get())
         }
-
-
     }
 
     override fun onCreate() {
         super.onCreate()
-        val policy = ThreadPolicy.Builder().permitAll().build()
 
-        StrictMode.setThreadPolicy(policy)
         startKoin{
             androidLogger()
             androidContext(this@OnyxApp)

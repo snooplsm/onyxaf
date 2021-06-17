@@ -11,7 +11,7 @@ abstract class SettingsDao {
 
     @Transaction
     open fun settings(): OnyxSettings {
-        return find() ?: OnyxSettings().apply {
+        return find() ?: OnyxSettings(id=1).apply {
             save(this)
         }
     }
@@ -22,3 +22,4 @@ abstract class SettingsDao {
     @Update
     abstract fun update(settings: OnyxSettings)
 }
+

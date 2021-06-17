@@ -29,7 +29,8 @@
     android:layout_height="30dp"
     android:layout_marginStart="10dp"
     android:layout_marginTop="5dp"
-    android:src="@drawable/ic_onyx_logo"
+    app:tint="@color/white"
+    android:src="@drawable/ic_onyxbike"
     android:foreground="?selectableItemBackgroundBorderless"
     android:visibility="gone"
     android:contentDescription="@string/cd_onyx_logo"
@@ -38,8 +39,9 @@
 
   <ImageView
     android:id="@+id/motor_stay"
-    android:layout_width="30dp"
-    android:layout_height="30dp"
+    android:layout_width="40dp"
+    android:padding="5dp"
+    android:layout_height="40dp"
     android:layout_marginEnd="10dp"
     android:src="@drawable/ic_motor_stay_01"
     android:contentDescription="@string/cd_motor_stay"
@@ -78,7 +80,8 @@
     android:layout_width="69dp"
     android:layout_height="69dp"
     android:layout_marginTop="60dp"
-    android:src="@drawable/ic_onyx_logo"
+    app:tint="@color/white"
+    android:src="@drawable/ic_onyxbike"
     android:contentDescription="@string/cd_onyx_logo"
     app:layout_constraintEnd_toEndOf="parent"
     app:layout_constraintStart_toStartOf="parent"
@@ -126,7 +129,7 @@
 
     <androidx.fragment.app.FragmentContainerView
       android:id="@+id/connectFragment"
-      android:name="us.wmwm.onyx.ConnectFragment"
+      android:name="us.wmwm.onyx.connect.ConnectFragment"
       android:layout_width="match_parent"
       android:layout_height="match_parent" />
   </FrameLayout>
