@@ -10,8 +10,6 @@ class SplashActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val date = Date()
-        //val first = Date(packageManager.getPackageInfo(packageName,0).in)
-        //val expired = !BuildConfig.DEBUG && (first.before(BuildConfig.BUILD_TIME) || first.after(BuildConfig.EXPIRE_TIME))
         if(date.before(BuildConfig.BUILD_TIME) || date.after(BuildConfig.EXPIRE_TIME)) {
             AppExpiredBottomSheetDialogFragment().show(supportFragmentManager,"expired")
         } else {
