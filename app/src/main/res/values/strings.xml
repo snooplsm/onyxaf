@@ -40,8 +40,10 @@
   <string name="have_no_clue_what_to_change_try_a_preset_to_get_the_ball_rolling">Have no clue what to change? Try a |preset| to get the hub motor spinning.</string>
   <string name="preset_or_previous_configuration">Load a |preset| or |previous configuration|.</string>
   <string name="preset">preset</string>
-  <string name="preset_john_angel">John Angel - Sicko Mode</string>
-  <string name="preset_onyx">Onyx - Stock</string>
+  <string name="preset_sicko">John Angel - Sicko Mode | 100%</string>
+  <string name="preset_torque">John Angel - Torque Mode | 75%</string>
+  <string name="preset_champ">John Angel - Champ Mode | 85%</string>
+  <string name="preset_onyx">Onyx - Stock | 50%</string>
   <string name="available_presets">Presets available are listed below.  If using performance settings, make sure you have made the proper modifications to your bike.</string>
   <string name="disconnect">Disconnect</string>
   <string name="googleServicesFile">google-services.json</string>

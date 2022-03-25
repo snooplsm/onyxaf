@@ -93,6 +93,7 @@ class ConnectFragment : Fragment() {
                     val claz = p1.getParcelableExtra<BluetoothClass>(BluetoothDevice.EXTRA_CLASS)!!
 
                     val name = p1.getStringExtra(BluetoothDevice.EXTRA_NAME) ?: return
+                    println(name)
                     if (!regex.matches(name)) {
                         return
                     }

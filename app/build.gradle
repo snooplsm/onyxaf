@@ -30,13 +30,13 @@ android {
     applicationId "us.wmwm.onyx"
     minSdkVersion 26
     targetSdkVersion 30
-    versionCode 6
-    versionName "0.4"
+    versionCode 7
+    versionName "0.5"
 
     def minutesSinceEpoch = System.currentTimeMillis()
 
     def expire = Calendar.getInstance()
-    expire.add(Calendar.DAY_OF_YEAR, 28)
+    expire.add(Calendar.DAY_OF_YEAR, 365)
     expire.set(Calendar.DAY_OF_WEEK, Calendar.WEDNESDAY)
 
     buildConfigField("java.util.Date", "BUILD_TIME", "new java.util.Date(${minutesSinceEpoch}l)")
